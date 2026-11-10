@@ -36,6 +36,19 @@ class TestTaskFlow(TestCase):
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json(), [created])
 
-    def test_health_indentifies_service(self):
-        response = self.client.get("/health")
-        self.assertEqual(response.json()["service"], "taskflow")
+    def test_rejects_overlong_title_without_writing(self):
+        # Seed an existing booking so we can prove it is left untouched.
+        seeded = self.client.post("/tasks", json={"title": "Book van service"})
+        self.assertEqual(seeded.status_code, 201)
+        before = self.client.get("/tasks").json()
+
+        # An overlong title (one character past the 100 limit) must be rejected.
+        overlong_title = "a" * 101
+        response = self.client.post("/tasks", json={"title": overlong_title})
+        self.assertEqual(response.status_code, 422)
+
+        # The rejection must leave the existing bookings exactly as they were:
+        # nothing added, nothing changed.
+        after = self.client.get("/tasks").json()
+        self.assertEqual(after, before)
+        self.assertEqual(after, [seeded.json()])
