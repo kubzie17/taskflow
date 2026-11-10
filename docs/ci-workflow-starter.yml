@@ -1,0 +1,28 @@
+# Worksheet only. Create .github/workflows/taskflow-ci.yml in YOUR project.
+# Fill the marked values and add the two named command steps.
+# Use spaces for indentation. Keep existing workflows under version control.
+name: TaskFlow CI
+
+on:
+  EVENT_GOES_HERE:
+
+permissions:
+  contents: ACCESS_GOES_HERE
+
+jobs:
+  test:
+    name: API tests
+    runs-on: RUNNER_GOES_HERE
+    steps:
+      - name: Check out proposed change
+        uses: OWNER/ACTION@VERSION
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: OWNER/ACTION@VERSION
+        with:
+          python-version: 'VERSION_GOES_HERE'
+
+      # Add an Install dependencies step that reads the repository requirements.
+      # Add a Run tests step that runs the full suite with the same interpreter.

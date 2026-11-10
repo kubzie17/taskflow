@@ -30,7 +30,7 @@ def create_app(db_path: Path | None = None) -> FastAPI:
 
     @api.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok", "service": "taskflow"} 
+        return {"status": "ok", "service": "taskflow"}
 
     @api.get("/tasks", response_model=list[Task])
     def read_tasks():

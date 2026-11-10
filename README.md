@@ -4,6 +4,8 @@ Build and operate a small task API for the dispatch team at Northbridge Repairs.
 
 Over ten days your copy will acquire release tests, a GitHub Actions workflow, a container, security controls, an AWS design and local Terraform infrastructure exercises. Today you need only Python, Git, an editor and this folder. Start with invented tasks and keep the server on your own computer.
 
+**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2)
+
 ## 1. Check your tools
 
 The classroom uses Python **3.12.x** and Git **2.28 or later**. A free GitHub account is needed for your hosted copy. VS Code is the suggested editor. Internet access is needed for the initial download and package installation.
@@ -151,3 +153,21 @@ If offline, keep the local commit and save its short hash. On GitHub, you may op
 The optional configuration template is [.env.example](.env.example). The application reads the **shell environment**. To change the database path before launching the server, run `$env:TASKFLOW_DB = 'data/another.db'` in PowerShell or `export TASKFLOW_DB='data/another.db'` on macOS/Linux. The default needs no setup.
 
 [Read the project architecture](docs/architecture.md) · [Start the Day 1 exercises](exercises/day01.md)
+
+## 8. Day 2
+
+Continue in this repository. You will test the booking title limit, run the check on a pull request and show how you diagnosed and repaired a failed run.
+
+Open the [Day 2 exercises](exercises/day02.md) and record your results in the [Day 2 evidence sheet](exercises/day02-evidence.md). Exercise C uses the [CI workflow scaffold](docs/ci-workflow-starter.yml).
+
+If the Day 2 files are already in your working copy, go straight to exercise A. If you still need the update, check `git status -sb` first and save and commit your Day 1 work on its current branch.
+
+- **You cloned the trainer’s repo directly.** On the branch tracking the trainer’s published branch, run `git pull --ff-only`. If your Day 1 changes are on a separate branch, start from that branch and use the single-commit route below.
+- **You used “Use this template” to create your own repo.** From the branch holding your Day 1 work, run `git switch -c ci/day02-checks`, or `git switch ci/day02-checks` if the branch already exists. Use the trainer’s repository URL and the hash of the Day 2 materials commit in these commands:
+
+  ```text
+  git fetch TRAINER_REPO_URL HEAD
+  git cherry-pick DAY2_COMMIT
+  ```
+
+  If the trainer published to a different branch, replace `HEAD` with its name. This brings the Day 2 changes into your own history. If Git flags a conflict, use `git cherry-pick --abort` to return to your starting point and compare the conflicting file with the trainer. An offline learner can obtain the same files from the Day 2 learner ZIP.
