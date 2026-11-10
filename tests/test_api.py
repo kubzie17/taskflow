@@ -29,6 +29,12 @@ class TestTaskFlow(TestCase):
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json(), [created])
 
+    def test_health_identifies_service(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(response.json()["service"], "taskflow")
+
     def test_health_indentifies_service(self):
         response = self.client.get("/health")
         self.assertEqual(response.json()["service"], "taskflow")
