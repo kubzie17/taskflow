@@ -35,3 +35,6 @@ class TestTaskFlow(TestCase):
         self.assertEqual(response.json()["status"], "ok")
         self.assertEqual(response.json()["service"], "taskflow")
 
+    def test_health_indentifies_service(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.json()["service"], "taskflow")
