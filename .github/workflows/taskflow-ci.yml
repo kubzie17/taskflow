@@ -3,9 +3,6 @@ name: TaskFlow CI
 on:
   pull_request:
     branches:
-      - main
-  push:
-    branches:
       - ci/day02-checks-tyreece
 
 permissions:
