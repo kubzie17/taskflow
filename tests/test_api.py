@@ -37,7 +37,7 @@ class TestTaskFlow(TestCase):
         response = self.client.post("/tasks", json={"title": "Book van service"})
         self.assertEqual(response.status_code, 201)
         response = self.client.post("/tasks", json={"title": "t" * 101})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
         listing = self.client.get("/tasks")
         self.assertEqual(listing.status_code, 200)
 
