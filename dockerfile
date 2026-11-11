@@ -1,15 +1,17 @@
+
 FROM python:3.12-slim
 
-WORKDIR /app
+WORKDIR /srv/taskflow
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    TASKFLOW_DB=/app/data/taskflow.db
+    TASKFLOW_DB=/var/lib/taskflow/taskflow.db
 
-COPY requirements.txt ./
+COPY requirements.txt .
+
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
+COPY app/ app/
 
 EXPOSE 8000
 
