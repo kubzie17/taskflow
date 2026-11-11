@@ -37,6 +37,6 @@ class TestTaskFlow(TestCase):
     def test_rejects_overlong_title_without_writing(self):
         before = self.client.get("/tasks").json()
         response = self.client.post("/tasks", json={"title": "X" * 101})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
         after = self.client.get("/tasks").json()
         self.assertEqual(after, before)
