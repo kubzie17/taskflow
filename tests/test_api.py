@@ -32,3 +32,14 @@ class TestTaskFlow(TestCase):
     def test_health_indentifies_service(self):
         response = self.client.get("/health")
         self.assertEqual(response.json()["service"], "taskflow")
+
+    # def test_rejects_overlong_title_without_writing(self):
+    #     before = post ttitle pre long title 
+    #     assert code 201
+
+    #     response = post long title 
+    #     assert code is 422
+
+    #     after = get task 
+    #     assert after.title = 
+
