@@ -3,8 +3,6 @@ name: Charlottes TaskFlow CI
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [feature/health-service-charlotte]
 
 permissions:
   contents: read
