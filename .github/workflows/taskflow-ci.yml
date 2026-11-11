@@ -7,13 +7,16 @@ on:
       - ci/day02-checks
   pull_request:
     branches:
-      - feature/health-service-terry
+      - main
 
 permissions:
   contents: read
 
 jobs:
   test:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.head_ref == 'feature/health-service-terry'
     name: API tests
     runs-on: ubuntu-latest
     steps:
