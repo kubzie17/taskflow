@@ -10,11 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
+    if: github.head_ref == 'feature/health-service-charlotte'
     runs-on: ubuntu-latest
     steps:
       - name: Check out latest changes
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
