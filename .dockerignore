@@ -1,0 +1,25 @@
+# Version control and CI
+.git
+.github
+
+# Your personal development environment
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.vscode/
+.DS_Store
+
+# Local data: never ship your database
+data/
+*.db
+*.db-*
+
+# Private settings
+.env
+.env.*
+
+# Not needed at runtime
+tests/
+exercises/
+docs/
