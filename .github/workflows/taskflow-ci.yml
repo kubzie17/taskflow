@@ -1,6 +1,10 @@
 name: TaskFlow CI
 
 on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci/day02-checks
   pull_request:
     branches:
       - feature/health-service-terry
