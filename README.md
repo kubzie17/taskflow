@@ -4,7 +4,7 @@ Build and operate a small task API for the dispatch team at Northbridge Repairs.
 
 Over ten days your copy will acquire release tests, a GitHub Actions workflow, a container, security controls, an AWS design and local Terraform infrastructure exercises. Today you need only Python, Git, an editor and this folder. Start with invented tasks and keep the server on your own computer.
 
-**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3) · [Day 4](#10-day-4)
+**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3)
 
 ## 1. Check your tools
 
