@@ -2,11 +2,6 @@ name: TaskFlow CI
 
 on:
   pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - feature/health-service-oliver
 
 permissions:
   contents: read
@@ -15,6 +10,9 @@ jobs:
   test:
     name: API tests
     runs-on: ubuntu-latest
+    # Only run for pull requests opened from MY branch, so other learners'
+    # PRs trigger the workflow but skip this job (head_ref = the PR source branch).
+    if: github.head_ref == 'feature/health-service-oliver'
     steps:
       - name: Check out proposed change
         uses: actions/checkout@v6
