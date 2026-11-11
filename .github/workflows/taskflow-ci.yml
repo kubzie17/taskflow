@@ -3,7 +3,7 @@ name: TaskFlow CI
 on:
   pull_request:
     branches:
-      - ci/day02-checks-tyreece
+      - main
 
 permissions:
   contents: read
@@ -12,6 +12,7 @@ jobs:
   test:
     name: API tests
     runs-on: ubuntu-latest
+    if: github.head_ref == 'ci/day02-checks-tyreece'
     steps:
       - name: Check out proposed change
         uses: actions/checkout@v4
