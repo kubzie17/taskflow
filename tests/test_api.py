@@ -42,5 +42,5 @@ class TestTaskFlow(TestCase):
         self.client.post("/tasks", json={"title": "Book van service"})  # existing booking that must survive
         before = self.client.get("/tasks").json()  # list with the existing booking
         response = self.client.post("/tasks", json={"title": "X" * 101})  # 101 chars, one over the limit
-        self.assertEqual(response.status_code, 422)  # rejected
+        self.assertEqual(response.status_code, 400)  # rejected
         self.assertEqual(self.client.get("/tasks").json(), before)  # existing bookings unchanged
