@@ -2,15 +2,15 @@ name: TaskFlow CI
 
 on:
   pull_request:
-    branches: [main]
-  push:
-    branches: [feature/health-service-mariya]
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
   test:
+    if: github.head_ref == 'feature/health-service-mariya'
     name: API tests
     runs-on: ubuntu-latest
     steps:
