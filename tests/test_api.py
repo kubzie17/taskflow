@@ -37,3 +37,10 @@ class TestTaskFlow(TestCase):
     def test_health_indentifies_service(self):
         response = self.client.get("/health")
         self.assertEqual(response.json()["service"], "taskflow")
+
+    def test_rejects_overlong_title_without_writing(self):
+        self.client.post("/tasks", json={"title": "Book van service"})  # existing booking that must survive
+        before = self.client.get("/tasks").json()  # list with the existing booking
+        response = self.client.post("/tasks", json={"title": "X" * 101})  # 101 chars, one over the limit
+        self.assertEqual(response.status_code, 422)  # rejected
+        self.assertEqual(self.client.get("/tasks").json(), before)  # existing bookings unchanged
