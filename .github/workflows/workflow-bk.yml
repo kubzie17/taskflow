@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    if: github.head_ref == `your branch here`
+    if: github.head_ref == `feature/health-service-banzi`
     name: API tests
     runs-on: ubuntu-latest
 
