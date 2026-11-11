@@ -45,7 +45,7 @@ class TestTaskFlow(TestCase):
         # An overlong title (one character past the 100 limit) must be rejected.
         overlong_title = "a" * 101
         response = self.client.post("/tasks", json={"title": overlong_title})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
         # The rejection must leave the existing bookings exactly as they were:
         # nothing added, nothing changed.
