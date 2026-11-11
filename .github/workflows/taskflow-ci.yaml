@@ -2,6 +2,8 @@ name: TaskFlow CI
 
 on:
   pull_request:
+    branches:
+      - feature/health-service-oliver
 
 permissions:
   contents: read
