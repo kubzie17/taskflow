@@ -1,13 +1,11 @@
 # Exclude everything by default
 **
-
 # Allow only the files needed for the application
 !Dockerfile
 !.dockerignore
 !requirements.txt
 !app/
 !app/**
-
 # Exclude generated and private files
 **/__pycache__/
 **/*.py[cod]
@@ -17,4 +15,3 @@
 **/.env.*
 **/*.db
 **/*.db-*
-
