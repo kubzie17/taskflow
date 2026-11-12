@@ -1,25 +1,20 @@
-# Version control and CI
-.git
-.github
 
-# Your personal development environment
-.venv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.vscode/
-.DS_Store
+# Exclude everything by default
+**
 
-# Local data: never ship your database
-data/
-*.db
-*.db-*
+# Allow only the files needed for the application
+!Dockerfile
+!.dockerignore
+!requirements.txt
+!app/
+!app/**
 
-# Private settings
-.env
-.env.*
-
-# Not needed at runtime
-tests/
-exercises/
-docs/
+# Exclude generated and private files
+**/__pycache__/
+**/*.py[cod]
+**/.git
+**/.venv
+**/.env
+**/.env.*
+**/*.db
+**/*.db-*
