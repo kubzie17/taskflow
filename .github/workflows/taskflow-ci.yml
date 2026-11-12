@@ -29,3 +29,16 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -q
+
+  package:
+    name: Package image
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out proposed change
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build the TaskFlow image
+        run: docker build -t taskflow:${{ github.sha }} .
