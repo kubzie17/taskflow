@@ -4,7 +4,7 @@ Build and operate a small task API for the dispatch team at Northbridge Repairs.
 
 Over ten days your copy will acquire release tests, a GitHub Actions workflow, a container, security controls, an AWS design and local Terraform infrastructure exercises. Today you need only Python, Git, an editor and this folder. Start with invented tasks and keep the server on your own computer.
 
-**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3)
+**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3) · [Day 4](#10-day-4)
 
 ## 1. Check your tools
 
@@ -171,3 +171,19 @@ If the Day 2 files are already in your working copy, go straight to exercise A. 
   ```
 
   If the trainer published to a different branch, replace `HEAD` with its name. This brings the Day 2 changes into your own history. If Git flags a conflict, use `git cherry-pick --abort` to return to your starting point and compare the conflicting file with the trainer. An offline learner can obtain the same files from the Day 2 learner ZIP.
+
+## 9. Day 3
+
+**Will the booking survive the next release?** Continue on your repaired Day 2 branch. Package TaskFlow, test whether dispatch can retrieve an existing booking after a replacement, and add a packaging decision to your PR workflow.
+
+Open the [Day 3 challenges and evidence record](exercises/day03.md). An optional [read-only booking check](exercises/check_booking.py) is included. Use your own lab instance and fictional titles.
+
+### Bring in the class update
+
+If the Day 3 files are already on your working branch, start the first challenge. Otherwise, run `git status -sb` and save any intended Day 2 edits on their owning branch before updating. The trainer will share the published branch and the commit ID for the Day 3 materials.
+
+- On a **clean branch tracking the trainer’s published branch**, `git pull --ff-only` retrieves the update when the histories allow a fast-forward.
+- On an **individual branch in the shared course repo**, stay on your own branch, run `git fetch origin` and then `git cherry-pick DAY3_COMMIT`. Replace `DAY3_COMMIT` with the trainer’s actual materials commit.
+- In an **independent repository made from a template**, run `git fetch TRAINER_REPO_URL PUBLISHED_BRANCH` and then `git cherry-pick DAY3_COMMIT` on the branch containing your repaired work. Replace all three placeholders with the trainer’s values.
+
+If Git reports a conflict, compare the affected file with the trainer. Use `git cherry-pick --abort` if you choose to return to the clean starting point. For an offline working copy, merge the learner ZIP contents into the existing repo root and retain your individual project changes.
