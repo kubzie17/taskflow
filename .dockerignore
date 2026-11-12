@@ -1,0 +1,14 @@
+**
+!Dockerfile
+!.dockerignore
+!requirements.txt
+!app/
+!app/**
+**/__pycache__/
+**/*.py[cod]
+**/.git
+**/.venv
+**/.env
+**/.env.*
+**/*.db
+**/*.db-*
