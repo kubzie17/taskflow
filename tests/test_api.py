@@ -6,6 +6,7 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+from exercises.day04_candidate import create_candidate
 
 
 class TestTaskFlow(TestCase):
@@ -33,3 +34,16 @@ class TestTaskFlow(TestCase):
         response = self.client.get("/health")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["service"], "taskflow")
+    
+    def test_support_status_exposes_only_public_fields(self):
+        folder = self.enterContext(TemporaryDirectory())
+        candidate = create_candidate(Path(folder) / "day04-test.db")
+        client = self.enterContext(TestClient(candidate))
+        response = client.get("/support/status")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body, {"status": "ok", "service": "taskflow"})
+        self.assertNotIn("support_node", body)
+        self.assertNotIn("runbook", body)
+
+
