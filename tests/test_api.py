@@ -6,6 +6,7 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+from exercises.day04_candidate import *
 
 
 class TestTaskFlow(TestCase):
@@ -42,6 +43,28 @@ class TestTaskFlow(TestCase):
         tasklist_end = self.client.get("/tasks").json()
         self.assertEqual(tasklist_end, tasklist_start)
 
-        
-        
+
+class TestTaskFlow2(TestCase):
+    def test_public_status_contract(self):
+        folder = self.enterContext(TemporaryDirectory())
+        api = create_candidate(Path(folder) / "test2.db")
+        self.client = self.enterContext(TestClient(api))
+        response = self.client.get("/support/status")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(response.json()["service"], "taskflow")
+    
+    def test_local_support_retains_its_diagnostics(self):
+        self.assertEqual(support_snapshot(), {
+        "status": "ok",
+        "service": "taskflow",
+        "support_node": "nb-lab-amber-02",
+        "runbook": "NB-DEMO-17"})
+
+    def test_candidate_preserves_health_and_booking(self):
+        folder = self.enterContext(TemporaryDirectory())
+        api = create_candidate(Path(folder) / "test2.db")
+        self.client = self.enterContext(TestClient(api))
+        TestTaskFlow.test_health_reports_ok(self)
+        TestTaskFlow.test_created_task_appears_in_list(self)
         
