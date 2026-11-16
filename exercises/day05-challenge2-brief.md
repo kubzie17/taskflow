@@ -19,7 +19,7 @@ Your task is to implement sign-in and bearer-token verification.
 From your project root:
 
 ```powershell
-python -m exercises.day05_identity
+python3 -m exercises.day05_identity
 ```
 
 The terminal will prompt you for two different fictional passphrases.
@@ -35,7 +35,7 @@ If you've already completed this initialisation, do not run it again.
 ## Step 2 — Start the protected API
 
 ```powershell
-python -m uvicorn exercises.day05_api:create_secure --factory --host 127.0.0.1 --port 8055 --reload
+python3 -m uvicorn exercises.day05_api:create_secure --factory --host 127.0.0.1 --port 8055 --reload
 ```
 
 Open:
@@ -95,6 +95,99 @@ Complete `sign_in()` so that:
 
 Do not accept a role from the caller's login request. Roles must come from the trusted identity store.
 
+curl -X 'POST' \
+  'http://127.0.0.1:8055/session' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "reader",
+  "password": "password123456789"
+}'
+
+	
+Response body
+200
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cm46bm9ydGhicmlkZ2U6dGFza2Zsb3c6bGFiIiwiYXVkIjoidXJuOm5vcnRoYnJpZGdlOnRhc2tmbG93OmJvb2tpbmdzIiwic3ViIjoicmVhZGVyIiwiaWF0IjoxNzk0NTY5OTIzLCJleHAiOjE3OTQ1NzA1MjMsInRva2VuX3VzZSI6ImFjY2VzcyIsInJvbGVzIjpbInJlYWRlciJdfQ.pTEU1-vhVr0wus280Ifzv9AMUO0vzJiPCQf7BAHQ7UM",
+  "token_type": "bearer",
+  "expires_in": 600
+}
+
+Response headers
+ cache-control: no-store 
+ content-length: 365 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 11:38:42 GMT 
+ server: uvicorn 
+
+
+curl -X 'POST' \
+  'http://127.0.0.1:8055/session' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "dispatcher",
+  "password": "password987654321"
+}'
+
+	
+Response body
+200
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cm46bm9ydGhicmlkZ2U6dGFza2Zsb3c6bGFiIiwiYXVkIjoidXJuOm5vcnRoYnJpZGdlOnRhc2tmbG93OmJvb2tpbmdzIiwic3ViIjoiZGlzcGF0Y2hlciIsImlhdCI6MTc5NDU3MDAzOSwiZXhwIjoxNzk0NTcwNjM5LCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJyb2xlcyI6WyJkaXNwYXRjaGVyIl19.YVKSwKyDtHKa-a8TDbkVsnHCtKj4S7Zn5H_90IUi4_4",
+  "token_type": "bearer",
+  "expires_in": 600
+}
+Response headers
+ cache-control: no-store 
+ content-length: 375 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 11:40:39 GMT 
+ server: uvicorn 
+
+
+curl -X 'POST' \
+  'http://127.0.0.1:8055/session' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "dispatcher",
+  "password": "wrongpassword"
+}'
+	
+Response body
+401
+{
+  "detail": "Authentication required"
+}
+Response headers
+ content-length: 36 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 11:42:15 GMT 
+ server: uvicorn 
+ www-authenticate: Bearer 
+
+curl -X 'POST' \
+  'http://127.0.0.1:8055/session' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "wrongusername",
+  "password": "password123456789"
+}'
+
+Response body
+401
+{
+  "detail": "Authentication required"
+}
+Response headers
+ content-length: 36 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 11:43:02 GMT 
+ server: uvicorn 
+ www-authenticate: Bearer 
+
 ## Step 6 — Implement the current-user check
 
 Complete `current_user()` so that:
@@ -142,3 +235,66 @@ Finally, attempt to access a protected route without a token.
 - One error you encountered and how you resolved it.
 
 Keep actual passwords and tokens private.
+
+
+{
+  "title": "reader-test"
+}
+Execute
+Clear
+Responses
+Curl
+
+curl -X 'POST' \
+  'http://127.0.0.1:8055/tasks' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cm46bm9ydGhicmlkZ2U6dGFza2Zsb3c6bGFiIiwiYXVkIjoidXJuOm5vcnRoYnJpZGdlOnRhc2tmbG93OmJvb2tpbmdzIiwic3ViIjoicmVhZGVyIiwiaWF0IjoxNzk0NTcxOTU1LCJleHAiOjE3OTQ1NzI1NTUsInRva2VuX3VzZSI6ImFjY2VzcyIsInJvbGVzIjpbInJlYWRlciJdfQ.dK5o_FAspsEi16phhx0eUZir4YdkiJ9Q7MWvLM3BHtM' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "reader-test"
+}'
+Request URL
+http://127.0.0.1:8055/tasks
+Server response
+Code	Details
+403
+Undocumented
+Error: Forbidden
+
+Response body
+Download
+{
+  "detail": "Insufficient privilege to access resource"
+}
+Response headers
+ content-length: 54 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 12:14:40 GMT 
+ server: uvicorn 
+
+
+
+curl -X 'POST' \
+  'http://127.0.0.1:8055/tasks' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cm46bm9ydGhicmlkZ2U6dGFza2Zsb3c6bGFiIiwiYXVkIjoidXJuOm5vcnRoYnJpZGdlOnRhc2tmbG93OmJvb2tpbmdzIiwic3ViIjoiZGlzcGF0Y2hlciIsImlhdCI6MTc5NDU3MjExNSwiZXhwIjoxNzk0NTcyNzE1LCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJyb2xlcyI6WyJkaXNwYXRjaGVyIl19.d3inMDdO1NVNWVHeua8n_dh-g7TaMn6LoPIIpMuqIcU' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "dispatcher-test"
+}'
+Request URL
+http://127.0.0.1:8055/tasks
+Server response
+Code	Details
+201	
+Response body
+Download
+{
+  "title": "dispatcher-test",
+  "id": 1
+}
+Response headers
+ content-length: 34 
+ content-type: application/json 
+ date: Fri,13 Nov 2026 12:15:36 GMT 
+ server: uvicorn 

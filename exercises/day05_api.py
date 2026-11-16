@@ -48,18 +48,38 @@ def create_secure(db_path: Path | None = None, provider=None) -> FastAPI:
     if isinstance(provider, LocalIdentity):
         @api.post("/session")
         def sign_in(credentials: SignIn, response: Response):
-            # Challenge 2. Exchange valid credentials for a short-lived local access token.
-            raise HTTPException(501, "Finish the sign-in challenge")
+            username = credentials.username
+            password = credentials.password.get_secret_value()
+            user = provider.check_password(username,password)
+            response.headers["Cache-Control"] = "no-store"
+            if user:
+                token = provider.issue(user)
+                return {"access_token": token, "token_type": "bearer", "expires_in":600}
+            else:
+                raise unauthenticated()
 
     def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> Principal:
         # Challenge 2. Establish a trusted identity for this request or reject it.
-        raise unauthenticated()
+        #1. A request without a bearer token is rejected with HTTP 401.
+        #2. A malformed or invalid bearer token is rejected with HTTP 401.
+        #3. A valid token is verified using the supplied identity provider.
+        #4. The trusted `Principal` is returned for the request.
+        if credentials is None:
+            raise unauthenticated()
+        try:
+            return provider.verify(credentials.credentials)
+        except InvalidCredential:
+            raise unauthenticated()
+
 
     def permit(*allowed: str):
         def gate(principal: Principal = Depends(current_user)):
-            # Challenge 3. Decide whether this identity may perform this operation.
-            raise HTTPException(403, "Permission denied")
+            if not principal.roles.isdisjoint(allowed):
+                return principal
+            raise HTTPException(403, "Insufficient privilege to access resource")
         return gate
+               
+            
 
     @api.get("/health")
     def health():
