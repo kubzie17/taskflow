@@ -49,16 +49,46 @@ def create_secure(db_path: Path | None = None, provider=None) -> FastAPI:
         @api.post("/session")
         def sign_in(credentials: SignIn, response: Response):
             # Challenge 2. Exchange valid credentials for a short-lived local access token.
-            raise HTTPException(501, "Finish the sign-in challenge")
+            # check_password verifies the hash and selects the server-controlled role.
+            # It returns None for both a wrong passphrase and an unknown user, so a
+            # single generic 401 keeps those two cases indistinguishable to the caller.
+            principal = provider.check_password(
+                credentials.username, credentials.password.get_secret_value()
+            )
+            if principal is None:
+                raise unauthenticated()
+            response.headers["Cache-Control"] = "no-store"
+            return {
+                "access_token": provider.issue(principal),
+                "token_type": "bearer",
+                "expires_in": 600,
+            }
 
     def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> Principal:
         # Challenge 2. Establish a trusted identity for this request or reject it.
-        raise unauthenticated()
+        # No Authorization header at all -> anonymous -> 401.
+        if credentials is None:
+            raise unauthenticated()
+        # verify() checks the signature, issuer, audience, expiry and required
+        # claims. Any failure (bad signature, expired, tampered) raises
+        # InvalidCredential, which we surface as a generic 401.
+        try:
+            return provider.verify(credentials.credentials)
+        except InvalidCredential:
+            raise unauthenticated()
 
     def permit(*allowed: str):
-        def gate(principal: Principal = Depends(current_user)):
+        allowed_roles = frozenset(allowed)
+
+        def gate(principal: Principal = Depends(current_user)) -> Principal:
             # Challenge 3. Decide whether this identity may perform this operation.
-            raise HTTPException(403, "Permission denied")
+            # current_user has already established a trusted, authenticated identity
+            # (or raised 401). This runs as a route dependency, so it executes before
+            # the handler body -> a denied caller never reaches the SQLite insert.
+            if principal.roles.isdisjoint(allowed_roles):
+                raise HTTPException(403, "Permission denied")
+            return principal
+
         return gate
 
     @api.get("/health")
