@@ -16,5 +16,6 @@
 **/.venv
 **/.env
 **/.env.*
+**/*.local.env
 **/*.db
 **/*.db-*
