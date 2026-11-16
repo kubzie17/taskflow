@@ -1,4 +1,4 @@
-"""Friday's lab entry point. Complete the three marked sections in your own branch."""
+"""Friday's solved reference. Run on loopback."""
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -48,17 +48,25 @@ def create_secure(db_path: Path | None = None, provider=None) -> FastAPI:
     if isinstance(provider, LocalIdentity):
         @api.post("/session")
         def sign_in(credentials: SignIn, response: Response):
-            # Challenge 2. Exchange valid credentials for a short-lived local access token.
-            raise HTTPException(501, "Finish the sign-in challenge")
+            principal = provider.check_password(credentials.username, credentials.password.get_secret_value())
+            if principal is None:
+                raise unauthenticated()
+            response.headers["Cache-Control"] = "no-store"
+            return {"access_token": provider.issue(principal), "token_type": "bearer", "expires_in": 600}
 
     def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> Principal:
-        # Challenge 2. Establish a trusted identity for this request or reject it.
-        raise unauthenticated()
+        if credentials is None or credentials.scheme.lower() != "bearer":
+            raise unauthenticated()
+        try:
+            return provider.verify(credentials.credentials)
+        except InvalidCredential:
+            raise unauthenticated() from None
 
     def permit(*allowed: str):
         def gate(principal: Principal = Depends(current_user)):
-            # Challenge 3. Decide whether this identity may perform this operation.
-            raise HTTPException(403, "Permission denied")
+            if principal.roles.isdisjoint(allowed):
+                raise HTTPException(403, "Permission denied")
+            return principal
         return gate
 
     @api.get("/health")
