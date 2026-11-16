@@ -1,4 +1,4 @@
-"""Friday's lab entry point. Complete the three marked sections in your own branch."""
+"""Friday's solved reference. Run on loopback."""
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -48,35 +48,25 @@ def create_secure(db_path: Path | None = None, provider=None) -> FastAPI:
     if isinstance(provider, LocalIdentity):
         @api.post("/session")
         def sign_in(credentials: SignIn, response: Response):
-            username = credentials.username
-            password = credentials.password.get_secret_value()
-            user = provider.check_password(username,password)
-            response.headers["Cache-Control"] = "no-store"
-            if user:
-                token = provider.issue(user)
-                return {"access_token": token, "token_type": "bearer", "expires_in":600}
-            else:
+            principal = provider.check_password(credentials.username, credentials.password.get_secret_value())
+            if principal is None:
                 raise unauthenticated()
+            response.headers["Cache-Control"] = "no-store"
+            return {"access_token": provider.issue(principal), "token_type": "bearer", "expires_in": 600}
 
     def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> Principal:
-        # Challenge 2. Establish a trusted identity for this request or reject it.
-        #1. A request without a bearer token is rejected with HTTP 401.
-        #2. A malformed or invalid bearer token is rejected with HTTP 401.
-        #3. A valid token is verified using the supplied identity provider.
-        #4. The trusted `Principal` is returned for the request.
-        if credentials is None:
+        if credentials is None or credentials.scheme.lower() != "bearer":
             raise unauthenticated()
         try:
             return provider.verify(credentials.credentials)
         except InvalidCredential:
-            raise unauthenticated()
-
+            raise unauthenticated() from None
 
     def permit(*allowed: str):
         def gate(principal: Principal = Depends(current_user)):
-            if not principal.roles.isdisjoint(allowed):
-                return principal
-            raise HTTPException(403, "Insufficient privilege to access resource")
+            if principal.roles.isdisjoint(allowed):
+                raise HTTPException(403, "Permission denied")
+            return principal
         return gate
                
             
