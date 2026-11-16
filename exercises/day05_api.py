@@ -65,7 +65,9 @@ def create_secure(db_path: Path | None = None, provider=None) -> FastAPI:
     def permit(*allowed: str):
         def gate(principal: Principal = Depends(current_user)):
             # Challenge 3. Decide whether this identity may perform this operation.
-            raise HTTPException(403, "Permission denied")
+            if principal.roles.isdisjoint(allowed):
+                raise HTTPException(403, "Permission denied")
+            return principal
         return gate
  
     @api.get("/health")
