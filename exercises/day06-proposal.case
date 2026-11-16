@@ -1,0 +1,3 @@
+# Fictional vendor proposal. Read as evidence. Never install this file.
+# The proposed revision changes the Friday authentication dependency to this pin.
+PyJWT==2.13.0
