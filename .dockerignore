@@ -18,3 +18,6 @@
 **/.env.*
 **/*.db
 **/*.db-*
+
+# Local diagnostic environment files
+**/*.local.env

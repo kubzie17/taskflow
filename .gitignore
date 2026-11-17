@@ -17,3 +17,5 @@ data/
 *.tfstate.*
 *.tfplan
 *.tfvars
+# Local diagnostic environment files
+*.local.env
