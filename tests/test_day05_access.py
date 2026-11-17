@@ -169,6 +169,15 @@ def test_malformed_token_rejected(lab):
     assert r.status_code == 401
 
 
+def test_malformed_bearer_post_rejected_no_write(lab):
+    client, db, _, _ = lab
+    before = rows(db)
+    r = client.post("/tasks", json={"title": "malformed bearer"},
+                    headers={"Authorization": "Bearer this.is.not.a.valid.token"})
+    assert r.status_code == 401
+    assert rows(db) == before
+
+
 def test_expired_token_rejected_no_write(lab):
     client, db, _, identity = lab
     before = rows(db)
