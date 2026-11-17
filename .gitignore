@@ -21,3 +21,5 @@ data/
 
 # Day 5 lab practice credentials (fictional, never commit)
 lab-credentials.txt
+# Local diagnostic environment files
+*.local.env

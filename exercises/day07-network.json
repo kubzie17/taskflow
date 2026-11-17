@@ -1,0 +1,22 @@
+{
+  "kind": "Fictional simplified teaching inventory. Not deployable AWS or Terraform configuration.",
+  "region": "us-east-1",
+  "vpc": {"name": "lab-blue", "cidr": "10.70.0.0/16", "internet_gateway": "igw-training"},
+  "subnets": [
+    {"name":"edge-a","cidr":"10.70.0.0/24","zone":"A","effective_route_table":"edge"},
+    {"name":"edge-b","cidr":"10.70.1.0/24","zone":"B","effective_route_table":"edge"},
+    {"name":"app-a","cidr":"10.70.10.0/24","zone":"A","effective_route_table":"internal"},
+    {"name":"app-b","cidr":"10.70.11.0/24","zone":"B","effective_route_table":"internal"},
+    {"name":"data-a","cidr":"10.70.20.0/24","zone":"A","effective_route_table":"internal"},
+    {"name":"data-b","cidr":"10.70.21.0/24","zone":"B","effective_route_table":"internal"}
+  ],
+  "routes": {
+    "edge": [["10.70.0.0/16","local"],["0.0.0.0/0","igw-training"]],
+    "internal": [["10.70.0.0/16","local"]]
+  },
+  "inbound_tcp": {
+    "sg-edge":[{"port":443,"cidr":"0.0.0.0/0"}],
+    "sg-app":[{"port":8000,"cidr":"0.0.0.0/0"},{"port":22,"cidr":"0.0.0.0/0"}],
+    "sg-db":[{"port":5432,"cidr":"10.70.0.0/16"}]
+  }
+}
