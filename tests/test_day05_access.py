@@ -25,8 +25,6 @@ def rows(db_path):
 
 
 
-
-
 def _token(client, username, password):
     """Sign in and return the raw access token string."""
     response = client.post("/session", json={"username": username, "password": password})
@@ -42,7 +40,7 @@ def test_visitor_cannot_create_task(lab):
     client, db_path, _ = lab
     before = rows(db_path)
 
-    response = client.post("/tasks", json={"title": "visitor attempt to create task"})
+    response = client.post("/tasks", json={"title": "visitor"})
 
     assert response.status_code == 401
     assert rows(db_path) == before
@@ -57,7 +55,6 @@ def test_reader_cannot_create_task(lab):
 
     assert response.status_code == 403
     assert rows(db_path) == before
-
 
 def test_dispatcher_can_create_task(lab):
     client, db_path, passwords = lab
