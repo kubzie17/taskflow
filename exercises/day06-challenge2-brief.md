@@ -30,14 +30,14 @@ Read **Exhibit A** in `day06-case.md`.
 In PowerShell, run:
 
 ```powershell
-python -c "from importlib.metadata import version; print(version('PyJWT'))"
+python3 -c "from importlib.metadata import version; print(version('PyJWT'))"
 ```
 
 Record:
 
-- The version declared in the requirements.
-- The version actually installed.
-- The proposed version.
+- The version declared in the requirements. 2.15.1
+- The version actually installed. 2.15.1
+- The proposed version. 2.13.0
 - Your Python interpreter version.
 
 Do not assume the installed version is correct just because the requirements file contains a particular pin.
@@ -47,10 +47,14 @@ Do not assume the installed version is correct just because the requirements fil
 Using Exhibit A, record:
 
 - Advisory ID: `GHSA-9v7f-9g4p-ffgj`
-- Affected version range.
-- First patched version.
-- Which part of PyJWT is affected.
-- What conditions are required for exploitation.
+- Affected version range. 
+< 2.14.0 (<= 2.13.0)
+- First patched version. 
+2.14.0
+- Which part of PyJWT is affected. 
+PyJWKClient (HTTP fetching logic)
+- What conditions are required for exploitation. 
+must actively use PyJWKClient, requires attacker-influenced HTTP redirect from a configured trusted JWKS endpoint
 
 Identify whether the finding affects every possible JWT verification path or a more specific part of the library.
 
@@ -66,20 +70,24 @@ Find how each implementation verifies tokens.
 Compare:
 
 1. The normal local identity implementation.
+encodes using HS256 
 2. The optional Cognito/external-key implementation.
-
+uses PyJWKClient
 Answer:
 
 - Which path uses a locally held signing key?
+identity
 - Which path may retrieve public keys from a remote endpoint?
+cognito
 - Does a successful local login demonstrate that the remote-key path is secure?
+no, successful local login doesnt need remote key path
 
 ## Step 5 — Test the proposed pin without installing it
 
 From the project root:
 
 ```powershell
-python exercises/day06_gate.py check --pin-file exercises/day06-proposal.case
+python3 exercises/day06_gate.py check --pin-file exercises/day06-proposal.case
 ```
 
 In PowerShell, immediately check:
@@ -89,13 +97,14 @@ $LASTEXITCODE
 ```
 
 Record the message and exit code.
+BLOCK: the proposed 2.13.0 pin is in the archived advisory's affected range.
 
 ## Step 6 — Test the approved course pin
 
 Run:
 
 ```powershell
-python exercises/day06_gate.py check
+python3 exercises/day06_gate.py check
 ```
 
 Again record:
@@ -103,6 +112,7 @@ Again record:
 ```powershell
 $LASTEXITCODE
 ```
+PASS: PyJWT 2.15.1 matches the reviewed class pin.
 
 Compare the two outcomes.
 
@@ -111,13 +121,17 @@ Compare the two outcomes.
 Run:
 
 ```powershell
-python -m pytest -q tests/test_day05_access.py
-python -m pytest -q
+python3 -m pytest -q tests/test_day05_access.py
+python3 -m pytest -q
 ```
 
 Record the actual results.
 
 If the Day 5 test file is missing or unfinished, report that limitation instead of claiming a clean regression run.
+
+ERROR: file or directory not found: tests/test_day05_access.py
+..................................                                                                                                                                                                                                        [100%]
+34 passed in 4.08s
 
 ## Step 8 — Write your engineering decision
 

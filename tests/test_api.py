@@ -7,6 +7,8 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from exercises.day04_candidate import *
+from exercises.day05_api import *
+from exercises.day05_identity import LocalIdentity, make_state
 
 
 class TestTaskFlow(TestCase):
@@ -68,3 +70,40 @@ class TestTaskFlow2(TestCase):
         TestTaskFlow.test_health_reports_ok(self)
         TestTaskFlow.test_created_task_appears_in_list(self)
         
+class TestTaskFlowPermissions(TestCase):
+    def setUp(self):
+        folder = self.enterContext(TemporaryDirectory())
+        self.passwords = {"reader": "reader-password", "dispatcher": "dispatcher-password"}
+        identity = LocalIdentity(make_state(self.passwords["reader"], self.passwords["dispatcher"]))
+        api = create_secure(Path(folder) / "test.db", identity)
+        self.client = self.enterContext(TestClient(api))
+
+    def headers_for(self, username):
+        response = self.client.post("/session", json={"username": username, "password": self.passwords[username]})
+        self.assertEqual(response.status_code, 200)
+        return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+    def test_visitor_is_rejected(self):
+        response = self.client.get("/tasks")
+        self.assertEqual(response.status_code, 401)
+        response = self.client.post("/tasks", json={"title": "Book van service"})
+        self.assertEqual(response.status_code, 401)
+
+    def test_reader_can_get_but_not_post(self):
+        headers = self.headers_for("reader")
+        response = self.client.get("/tasks", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/tasks", json={"title": "Book van service"}, headers=headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.client.get("/tasks", headers=headers).json(), [])
+    
+    def test_dispatcher_can_get_and_post(self):
+        headers = self.headers_for("dispatcher")
+        response = self.client.get("/tasks", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/tasks", json={"title": "Book van service"}, headers=headers)
+        self.assertEqual(response.status_code, 201)
+        
+        
+
+
