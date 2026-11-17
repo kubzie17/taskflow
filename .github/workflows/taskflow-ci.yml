@@ -1,0 +1,31 @@
+name: Charlottes TaskFlow CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: github.head_ref == 'feature/health-service-charlotte'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out latest changes
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up pyth0n
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install latest dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest
