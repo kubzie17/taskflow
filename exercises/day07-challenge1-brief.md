@@ -1,4 +1,3 @@
-:::writing{variant="document" id="78101"}
 # Challenge 1 — AWS Access and Readiness Investigation
 
 **Time:** 20 minutes  
@@ -152,5 +151,3 @@ Each team must provide:
 **Success:** Your team can explain which AWS capabilities have actually been verified and which must be confirmed before using Terraform or deploying TaskFlow.
 
 Do not create, modify or delete cloud resources during this exercise.
-
-:::
