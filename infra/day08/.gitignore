@@ -1,0 +1,17 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+*.tfvars
+*.tfvars.json
+*.pem
+*.key
+*.log
+.env
+crash.*
+.terraform.tfstate.lock.info
+*.tfbackend
+override.tf
+*_override.tf
+# .terraform.lock.hcl records provider versions/checksums and CAN be committed after review.
