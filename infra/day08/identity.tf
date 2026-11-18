@@ -1,8 +1,8 @@
-resource "aws_iam_role" "pilot" {
+resource "aws_iam_role" "pilot-cool-squad" {
   count = local.create_role ? 1 : 0
   name  = "${local.name}-node"
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
@@ -12,10 +12,10 @@ resource "aws_iam_role" "pilot" {
 }
 
 # Core agent operations. Parameter-value retrieval is granted separately for one team key on Day 9.
-resource "aws_iam_role_policy" "agent" {
+resource "aws_iam_role_policy" "agent-cool-squad" {
   count = local.create_role ? 1 : 0
   name  = "taskflow-agent"
-  role  = aws_iam_role.pilot[0].id
+  role  = aws_iam_role.pilot-cool-squad[0].id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -38,8 +38,8 @@ resource "aws_iam_role_policy" "agent" {
   })
 }
 
-resource "aws_iam_instance_profile" "pilot" {
+resource "aws_iam_instance_profile" "pilot-cool-squad" {
   count = local.create_role ? 1 : 0
   name  = "${local.name}-profile"
-  role  = aws_iam_role.pilot[0].name
+  role  = aws_iam_role.pilot-cool-squad[0].name
 }
