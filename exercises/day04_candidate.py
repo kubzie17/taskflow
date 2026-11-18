@@ -24,6 +24,7 @@ def create_candidate(db_path: Path | None = None) -> FastAPI:
 
     @api.get("/support/status")
     def support_status() -> dict[str, str]:
-        return support_snapshot()
+        snapshot = support_snapshot()
+        return {"status": snapshot["status"], "service": snapshot["service"]}
 
     return api

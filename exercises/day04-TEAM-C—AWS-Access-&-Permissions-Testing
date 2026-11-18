@@ -1,0 +1,180 @@
+# TEAM C — AWS Access & Permissions Testing
+
+**Workbook:** Day 7 Workshop Workbook  
+**Worksheet:** 1 Access  
+**Your rows:** 24–33
+
+You are already logged into AWS. Your task is to check which AWS services you can access with your current account and permissions.
+
+**Important:** Do not create, delete, launch, upload or change any AWS resources. This exercise is inspection-only.
+
+### 1. Portal / Identity (Row 24)
+
+**What to do:**
+1. Open the account/profile menu at the top-right.
+2. Check your signed-in user or role details.
+3. Look at the selected AWS Region.
+
+**How to verify:**
+- Can you access the AWS Console?
+- Can you identify the signed-in identity?
+- Can you identify the AWS Region?
+
+**Record:** The identity type, Region and whether login works.
+
+### 2. CLI / Caller Identity (Row 25)
+
+**What to do:**
+1. Search for `CloudShell`.
+2. Open CloudShell.
+3. Enter the command:
+
+`aws sts get-caller-identity`
+
+4. Press Enter.
+
+**How to verify:**
+- A JSON response containing `UserId`, `Account` and `Arn` confirms successful execution.
+- An AccessDenied error means the operation was blocked.
+- Failure to launch CloudShell should be recorded separately.
+
+**Record:** Whether CloudShell and the command worked. Record the identity type, not full account identifiers.
+
+### 3. IAM / Assigned Role (Row 26)
+
+**What to do:**
+1. Search for `IAM`.
+2. Open IAM.
+3. Navigate to **Roles** or **Users**.
+4. Try to find your assigned identity.
+5. Open its **Permissions** tab if available.
+
+**How to verify:**
+- Can you see the relevant IAM identity?
+- Can you inspect any assigned permission policies?
+- Does AWS block access?
+
+**Record:** Allowed, Denied or Partial, specifying what you could view.
+
+### 4. VPC / Subnet / Route (Row 27)
+
+**What to do:**
+1. Search for `VPC`.
+2. Open **Your VPCs**.
+3. Check the VPC list.
+4. Navigate to **Subnets**.
+5. Navigate to **Route tables**.
+6. Select existing resources, if available, to inspect their details.
+
+**How to verify:**
+- Can you list VPCs?
+- Can you inspect subnets?
+- Can you view routing information?
+
+**Record:** Any successful, denied or empty sections.
+
+### 5. Security Groups / Inbound Settings (Row 28)
+
+**What to do:**
+1. Open VPC.
+2. Select **Security groups**.
+3. Choose an existing security group.
+4. Open **Inbound rules**.
+5. Inspect the port ranges, protocols and sources.
+
+**How to verify:**
+- Can you see security groups?
+- Can you inspect inbound rules?
+- Can you determine what incoming traffic is permitted?
+
+**Record:** Whether these settings are visible, without editing anything.
+
+### 6. EC2 / Volume and Host (Row 29)
+
+**What to do:**
+1. Search for `EC2`.
+2. Open **Instances**.
+3. Inspect the list of existing instances.
+4. Select an instance if available and inspect its Details and Storage tabs.
+5. Navigate to **Elastic Block Store → Volumes**.
+
+**How to verify:**
+- Can you see instances?
+- Can you inspect instance information?
+- Can you view storage volumes?
+
+**Record:** Allowed, Denied, Partial or No resources, depending on the results.
+
+### 7. S3 / Bucket Properties (Row 30)
+
+**What to do:**
+1. Search for `S3`.
+2. Open **General purpose buckets**.
+3. Select an existing bucket you are authorised to inspect.
+4. Open **Properties**.
+5. Open **Permissions**.
+
+**How to verify:**
+- Can you list buckets?
+- Can you open bucket properties?
+- Can you inspect bucket permissions?
+
+**Record:** Which pages worked and any access errors.
+
+### 8. CloudWatch / Log Groups (Row 31)
+
+**What to do:**
+1. Search for `CloudWatch`.
+2. Open **Logs → Log groups**.
+3. Inspect the log-group list.
+4. Select an existing log group if available.
+
+**How to verify:**
+- Can you access the Log groups page?
+- Can you inspect an existing log group?
+- Is access denied?
+
+**Record:** Allowed, Denied, Partial or No resources.
+
+### 9. ECS / Services (Row 32)
+
+**What to do:**
+1. Search for `Elastic Container Service`.
+2. Open **Clusters**.
+3. Check whether clusters are listed.
+4. Select one if available.
+5. Open the **Services** tab.
+
+**How to verify:**
+- Can you see the ECS cluster list?
+- Can you inspect services?
+- Are you denied access?
+
+**Record:** Access status and observed result.
+
+### 10. S3 / Object Authority (Row 33)
+
+**What to do:**
+1. Return to S3.
+2. Open an existing authorised bucket.
+3. Select **Objects**.
+4. Check the list of available objects.
+5. Select an existing object, if permitted, and inspect its metadata.
+
+**How to verify:**
+- Can you list objects?
+- Can you inspect object metadata?
+- Does AWS block either action?
+
+**Record:** What you could inspect. Do not assume this means upload, download or delete permissions exist.
+
+### Completing your workbook
+
+Complete rows 24–33 using:
+- **Region:** The AWS Region tested.
+- **Access status:** Allowed, Denied, Partial, No resources or Not tested.
+- **Observed evidence:** Successful screen, empty list or error encountered.
+- **Expiry / reset / cost:** Any known restrictions, or "Unknown — no changes made".
+- **Route / next owner:** The next check or permission request required.
+
+**When finished:** Team C should be ready to discuss which AWS services are accessible, which are restricted, and what this means for potentially hosting TaskFlow on AWS.
