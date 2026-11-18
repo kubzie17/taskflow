@@ -1,0 +1,8 @@
+# Copy as team.auto.tfvars in the real AWS root. Replace the four placeholders privately.
+aws_region          = "eu-west-1"
+approved_account_id = "REPLACE_WITH_OWNER_ACCOUNT"
+team                = "REPLACE_WITH_ASSIGNED_ALIAS"
+subnet_id           = "REPLACE_WITH_ASSIGNED_SUBNET"
+ami_id              = "REPLACE_WITH_PINNED_IMAGE"
+# existing_instance_profile = "APPROVED_PROFILE_NAME"
+# enable_host = false   # Only for a fresh or checked network-only path with the trainer.
