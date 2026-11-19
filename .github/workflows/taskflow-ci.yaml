@@ -1,0 +1,31 @@
+name: TaskFlow CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: API tests
+    runs-on: ubuntu-latest
+    # Only run for pull requests opened from MY branch, so other learners'
+    # PRs trigger the workflow but skip this job (head_ref = the PR source branch).
+    if: github.head_ref == 'feature/health-service-oliver'
+    steps:
+      - name: Check out proposed change
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest -q

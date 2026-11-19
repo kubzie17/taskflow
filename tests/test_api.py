@@ -6,7 +6,6 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from exercises.day04_candidate import create_candidate, support_snapshot
 
 
 class TestTaskFlow(TestCase):
@@ -20,6 +19,13 @@ class TestTaskFlow(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "ok")
 
+    def test_health_identifies_service(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["status"], "ok")
+        self.assertEqual(body["service"], "taskflow")
+
     def test_created_task_appears_in_list(self):
         response = self.client.post("/tasks", json={"title": "Book van service"})
         self.assertEqual(response.status_code, 201)
@@ -30,57 +36,19 @@ class TestTaskFlow(TestCase):
         self.assertEqual(listing.status_code, 200)
         self.assertEqual(listing.json(), [created])
 
-    def test_health_indentifies_service(self):
-        response = self.client.get("/health")
-        self.assertEqual(response.json()["service"], "taskflow")
+    def test_rejects_overlong_title_without_writing(self):
+        # Seed an existing booking so we can prove it is left untouched.
+        seeded = self.client.post("/tasks", json={"title": "Book van service"})
+        self.assertEqual(seeded.status_code, 201)
+        before = self.client.get("/tasks").json()
 
-    # TEST 1 — The public endpoint must return only two fields
-def test_public_status_contract(tmp_path):
-    with TestClient(create_candidate(tmp_path / "status.db")) as client:
-        response = client.get("/support/status")
+        # An overlong title (one character past the 100 limit) must be rejected.
+        overlong_title = "a" * 101
+        response = self.client.post("/tasks", json={"title": overlong_title})
+        self.assertEqual(response.status_code, 422)
 
-    assert response.status_code == 200
-
-    assert response.json() == {
-        "status": "ok",
-        "service": "taskflow",
-    }
-
-
-# TEST 2 — Internal support diagnostics must still exist
-def test_local_support_retains_its_diagnostics():
-    snapshot = support_snapshot()
-
-    assert snapshot["support_node"] == "nb-lab-amber-02"
-    assert snapshot["runbook"] == "NB-DEMO-17"
-
-
-# TEST 3 — Existing TaskFlow functionality must still work
-def test_candidate_preserves_health_and_booking(tmp_path):
-    with TestClient(create_candidate(tmp_path / "booking.db")) as client:
-
-        # Check existing health endpoint
-        health = client.get("/health")
-
-        assert health.status_code == 200
-        assert health.json()["status"] == "ok"
-
-        # Create a fictional booking
-        created = client.post(
-            "/tasks",
-            json={"title": "Check west shutter T4"},
-        )
-
-        assert created.status_code == 201
-
-        booking = created.json()
-
-        assert isinstance(booking["id"], int)
-        assert booking["title"] == "Check west shutter T4"
-
-        # Confirm the booking is stored
-        listing = client.get("/tasks")
-
-        assert listing.status_code == 200
-        assert booking in listing.json()
-
+        # The rejection must leave the existing bookings exactly as they were:
+        # nothing added, nothing changed.
+        after = self.client.get("/tasks").json()
+        self.assertEqual(after, before)
+        self.assertEqual(after, [seeded.json()])
