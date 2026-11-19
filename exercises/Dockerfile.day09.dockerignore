@@ -1,0 +1,14 @@
+**
+!Dockerfile.day09
+!Dockerfile.day09.dockerignore
+!requirements.txt
+!app/
+!app/__init__.py
+!app/main.py
+!app/database.py
+!exercises/
+!exercises/day05-requirements.txt
+!exercises/day04_candidate.py
+!exercises/day05_api.py
+!exercises/day05_identity.py
+!exercises/day09_entry.py

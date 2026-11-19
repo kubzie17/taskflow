@@ -1,0 +1,7 @@
+{
+  "account": "REPLACE_WITH_APPROVED_ACCOUNT",
+  "region": "eu-west-1",
+  "repository": "REPLACE_WITH_TEAM_ECR_REPOSITORY",
+  "parameter": "REPLACE_WITH_TEAM_PARAMETER_PATH",
+  "volume_id": "REPLACE_WITH_WEDNESDAY_BOOKINGS_VOLUME"
+}
