@@ -13,4 +13,4 @@ LABEL org.opencontainers.image.title="TaskFlow protected training API" \
       org.opencontainers.image.revision=$SOURCE_REVISION
 USER 10001:10001
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "exercises.day09_entry:TODO_FACTORY", "--factory", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+CMD ["python", "-m", "uvicorn", "exercises.day09_entry:application", "--factory", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
