@@ -2,7 +2,7 @@ resource "aws_iam_role" "pilot" {
   count = local.create_role ? 1 : 0
   name  = "${local.name}-node"
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }

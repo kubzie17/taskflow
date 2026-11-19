@@ -98,3 +98,5 @@ class TestTaskFlow(TestCase):
             listing = client.get("/tasks")
             self.assertEqual(listing.status_code, 200)
             self.assertEqual(listing.json(), [booking])
+
+            

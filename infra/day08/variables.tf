@@ -67,4 +67,12 @@ variable "retire_on" {
   }
 }
 
-# Workshop 2: declare release_stage here with a string type, default and validation.
+variable "release_stage" {
+  description = "Infrastructure milestone recorded on the security-group ReleaseStage tag."
+  type        = string
+  default     = "foundation"
+  validation {
+    condition     = contains(["foundation", "deploy-ready"], var.release_stage)
+    error_message = "release_stage must be either \"foundation\" or \"deploy-ready\"."
+  }
+}
