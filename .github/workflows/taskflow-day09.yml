@@ -7,7 +7,7 @@ on:
         description: Approved team environment
         required: true
         type: choice
-        options: [training-team-a, training-team-b, training-team-c]
+        options: [cool-squad, taskflow-terry-oliver, deploy-squad]
       deploy:
         description: Deploy after successful checks and publishing
         required: true
