@@ -1,0 +1,182 @@
+name: TaskFlow Day 9
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Approved team environment
+        required: true
+        type: choice
+        options: [training-team-a, training-team-b, training-team-c]
+      deploy:
+        description: Deploy after successful checks and publishing
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+concurrency:
+  group: day09-${{ github.workflow }}-${{ inputs.environment || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dependency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
+      - name: Check the class identity dependency rule
+        run: python exercises/day06_gate.py check
+      - name: Audit the actual dependency manifests
+        run: |
+          python -m pip install pip-audit==2.10.1
+          python -m pip_audit -r requirements.txt -r exercises/day05-requirements.txt
+
+  test:
+    needs: dependency
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_ENVIRONMENT: ci
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
+      - run: python -m pip install -r requirements.txt -r exercises/day05-requirements.txt
+      - name: Run the full pytest suite
+        run: python -m pytest -q
+
+  package:
+    needs: [dependency, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
+      - name: Build protected image for the AWS host architecture
+        run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f Dockerfile.day09 -t taskflow:checked .
+      - name: Test the actual container including its restart
+        run: |
+          python -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
+          docker run --rm --network none --entrypoint python taskflow:checked -m pip freeze > image-requirements.txt
+          python -m pip_audit --no-deps -r image-requirements.txt
+          python -m exercises.day09_image_check taskflow:checked
+      - name: Save the checked image
+        run: docker save taskflow:checked -o taskflow-image.tar
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: day09-image
+          path: taskflow-image.tar
+          retention-days: 2
+
+  publish:
+    needs: [dependency, test, package]
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - name: Require configured non-sensitive values
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          APP_ENVIRONMENT: ${{ vars.APP_ENVIRONMENT }}
+        run: |
+          : "${AWS_REGION:?Set the environment variable AWS_REGION}"
+          : "${AWS_ACCOUNT_ID:?Set AWS_ACCOUNT_ID}"
+          : "${AWS_ROLE_ARN:?Set AWS_ROLE_ARN}"
+          : "${ECR_REPOSITORY:?Set ECR_REPOSITORY}"
+          test "$APP_ENVIRONMENT" = training
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]
+          [[ "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]$ ]]
+          [[ "$ECR_REPOSITORY" =~ ^taskflow-[a-z0-9-]+$ ]]
+      - name: Demonstrate an environment-scoped fictional secret
+        env:
+          DEMO_RELEASE_NOTE: ${{ secrets.DEMO_RELEASE_NOTE }}
+        run: |
+          if [ -n "$DEMO_RELEASE_NOTE" ]; then
+            echo "Fictional release secret is available in this environment. Its value is withheld."
+          else
+            echo "Optional fictional secret exercise has not been configured."
+          fi
+      - uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          allowed-account-ids: ${{ vars.AWS_ACCOUNT_ID }}
+          role-session-name: taskflow-${{ github.run_id }}
+          role-duration-seconds: 900
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: day09-image
+      - name: Publish the checked image and record its digest
+        id: push
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+          trap 'docker logout "$registry" >/dev/null 2>&1 || true' EXIT
+          docker load -i taskflow-image.tar
+          aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$registry"
+          docker tag taskflow:checked "$registry/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push "$registry/$ECR_REPOSITORY:$IMAGE_TAG"
+          digest=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$IMAGE_TAG" --query 'imageDetails[0].imageDigest' --output text)
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          printf 'digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
+          printf 'Reviewed image `%s/%s@%s`\n' "$registry" "$ECR_REPOSITORY" "$digest" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: [dependency, test, package, publish]
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy }}
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          allowed-account-ids: ${{ vars.AWS_ACCOUNT_ID }}
+          role-duration-seconds: 900
+      - name: Run the fixed deployment document on the original host
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          INSTANCE_ID: ${{ vars.INSTANCE_ID }}
+          SSM_DOCUMENT: ${{ vars.SSM_DOCUMENT }}
+          APP_ENVIRONMENT: ${{ vars.APP_ENVIRONMENT }}
+          APP_PORT: ${{ vars.APP_PORT }}
+          IMAGE_DIGEST: ${{ needs.publish.outputs.digest }}
+        run: python exercises/day09_submit.py
