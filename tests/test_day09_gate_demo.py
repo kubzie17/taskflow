@@ -18,5 +18,5 @@ class TEST(TestCase):
 
     def test_fake_on_purpose(self):
         response = self.client.get("/health")
-        self.assertEqual(response.status_code, 20)
+        self.assertEqual(response.status_code, 200)
         
