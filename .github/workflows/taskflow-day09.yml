@@ -69,7 +69,7 @@ jobs:
         with:
           python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
       - name: Build protected image for the AWS host architecture
-        run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f Dockerfile.day09 -t taskflow:checked .
+        run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f exercises/Dockerfile.day09 -t taskflow:checked .
       - name: Test the actual container including its restart
         run: |
           python3 -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
