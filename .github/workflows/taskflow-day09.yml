@@ -1,6 +1,9 @@
 name: TaskFlow Day 9
 on:
   pull_request:
+  # TEMPORARY: publish from the team branch before merge. Revert before merging to main.
+  push:
+    branches: [day09/protected-build-tyreece]
   workflow_dispatch:
     inputs:
       environment:
@@ -87,8 +90,8 @@ jobs:
 
   publish:
     needs: [dependency, test, package]
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
-    environment: ${{ inputs.environment }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'push' && github.ref == 'refs/heads/day09/protected-build-tyreece') }}
+    environment: ${{ inputs.environment || 'deploy-squad' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
