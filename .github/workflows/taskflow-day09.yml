@@ -87,7 +87,8 @@ jobs:
 
   publish:
     needs: [dependency, test, package]
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test-branch') }}
+
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
