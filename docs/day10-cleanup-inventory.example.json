@@ -1,0 +1,60 @@
+{
+  "account": "YOUR_12_DIGIT_ACCOUNT",
+  "region": "YOUR_EXISTING_REGION",
+  "resources": [
+    {
+      "type": "instance",
+      "id": "ORIGINAL_INSTANCE_ID",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "volume",
+      "id": "ORIGINAL_ROOT_VOLUME_ID",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "volume",
+      "id": "ORIGINAL_BOOKINGS_VOLUME_ID",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "security_group",
+      "id": "TEAM_SECURITY_GROUP_ID",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "ecr",
+      "id": "taskflow-TEAM",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "parameter",
+      "id": "/taskflow/TEAM/runtime-identity",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "ssm_document",
+      "id": "TaskFlow-Day09-TEAM",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "iam_role",
+      "id": "TaskFlow-Day09-TEAM-github",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    },
+    {
+      "type": "log_group",
+      "id": "/taskflow/TEAM/day10",
+      "owner": "NAMED_OWNER",
+      "approved_action": "delete or retain with owner and expiry"
+    }
+  ]
+}

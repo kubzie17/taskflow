@@ -1,0 +1,13 @@
+{
+  "team": "YOUR_TEAM",
+  "evidence_scope": "own AWS / instructor AWS observed / local Docker",
+  "run": "YOUR_UNIQUE_RUN",
+  "source_database": "/srv/taskflow-data/app/taskflow.db",
+  "checkpoint": "/srv/taskflow-data/recovery/YOUR_UNIQUE_RUN/checkpoint.db",
+  "restore": "/srv/taskflow-data/recovery/YOUR_UNIQUE_RUN/restored/taskflow.db",
+  "proposed_rto_seconds": null,
+  "proposed_rpo_seconds": null,
+  "booking_a_id": null,
+  "booking_b_id": null,
+  "prediction": "Write your prediction before performing the restore"
+}

@@ -241,3 +241,11 @@ The new `Dockerfile.day09` and `exercises/day09_entry.py` are learner starters f
 Save intended prior work and check `git status -sb`. A clean tracking branch can use `git pull --ff-only`. A clean personal branch can use `git fetch origin` then `git cherry-pick MATERIALS_COMMIT` with the trainer's published Day 9 commit. An independent template repo can fetch `https://github.com/kubzie17/taskflow.git main` then cherry-pick that commit. Resolve conflicts with the trainer, or use `git cherry-pick --abort` to return to the starting point. Keep private evidence, identities, generated AWS policies, Terraform state and team inputs outside the published files.
 
 Finish with the protected application's role tests and a booking surviving a container restart. Record the exact image digest and original EBS ID. Friday continues with monitoring, controlled failure, recovery and release review.
+
+## 16. Day 10
+
+**Can Northbridge trust, recover and release TaskFlow?** Friday is online. Start with the [Day 10 guide](exercises/day10.md) and [45-minute homework verification](exercises/day10-homework-check.md). Day 9 Challenge 2 was homework and each team's deployment remains to be verified. Preserve the original state, host, bookings volume and passing image.
+
+The two main workshops cover [monitoring and service recovery](exercises/day10-challenge1-brief.md) and [consistent SQLite checkpoint/restore](exercises/day10-challenge2-brief.md). Use the [editable evidence workbook](exercises/Day_10_Assessment_and_Resource_Ledger.xlsx) or [Markdown form](exercises/day10-evidence.md), saved privately. Complete the [independent release review](exercises/day10-release-review.md), then protect **14:30–15:25 for verified cleanup** using the [learner checklist](exercises/day10-cleanup.md).
+
+These additions use the existing folders and do not replace Day 1–9 code or Terraform configuration. Follow the update/cherry-pick instructions in the Day 10 guide. The opening check addresses the current Day 9 Dockerfile location without overwriting completed learner files. Private trainer material, generated inventories, evidence, credentials and state stay outside Git.
