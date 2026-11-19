@@ -4,8 +4,7 @@ Build and operate a small task API for the dispatch team at Northbridge Repairs.
 
 Over ten days your copy will acquire release tests, a GitHub Actions workflow, a container, security controls, an AWS design and local Terraform infrastructure exercises. Today you need only Python, Git, an editor and this folder. Start with invented tasks and keep the server on your own computer.
 
-**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3) · [Day 4](#10-day-4) · [Day 5](#11-day-5) · [Day 6](#12-day-6)
-**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3) · [Day 4](#10-day-4) · [Day 5](#11-day-5) · [Day 6](#12-day-6)
+**Course exercises** · [Day 1](exercises/day01.md) · [Day 2](#8-day-2) · [Day 3](#9-day-3) · [Day 4](#10-day-4) · [Day 5](#11-day-5) · [Day 6](#12-day-6) · [Day 7](#13-day-7) · [Day 8](#14-day-8) · [Day 9](#15-day-9)
 
 ## 1. Check your tools
 
@@ -194,3 +193,51 @@ If Git reports a conflict, compare the affected file with the trainer. Use `git 
 **Can we trust who is using TaskFlow?** Join the in-person Northbridge pilot review. Save a personal copy of the [Day 4 workshop workbook](exercises/Day_4_Workshop_Workbook.xlsx) outside the repo. It contains the two maps, three exhibits, risk register and client decision. Open the [Day 4 workshop guide](exercises/day04.md) for the six briefs, [evidence exhibits](exercises/day04-evidence.md) and the [local training candidate](exercises/day04_candidate.py). Thursday’s lab adds an opt-in service on a separate port with its own SQLite file. It uses your existing app factory and dependencies.
 
 If working on your own branch, save intended Day 3 changes there and check `git status -sb`. When the materials are already present, follow the guide to create your personal Day 4 branch. On a clean shared-repo learner branch, fetch with `git fetch origin`, then run `git cherry-pick DAY4_COMMIT` using the trainer’s published materials commit. A clean branch tracking the class materials can use `git pull --ff-only` when the histories allow it. For an independent template repo, use `git fetch TRAINER_REPO_URL PUBLISHED_BRANCH` then `git cherry-pick DAY4_COMMIT` with the trainer’s actual values. If a cherry-pick conflicts, compare the files with your trainer or use `git cherry-pick --abort` to return to your previous state. The learner ZIP can also be merged into the existing project root. Preserve any additional local README entries.
+
+## 11. Day 5
+
+**Who can book the repair?** Friday's online workshop picks up the unauthorised booking on port 8044. Read the [Day 5 challenges and setup](exercises/day05.md). Use Thursday’s original process once to establish the baseline, then stop it. Friday’s protected pilot uses port **8055** with fictional local identities, a separate SQLite file and the same TaskFlow booking models and storage functions.
+
+From your activated Python 3.12 environment, run the following in the repo root. Complete the sign-in and role checks in `exercises/day05_api.py` and create your tests under `tests/`. The starter refuses access until you implement the checks. Run `python -m pytest -q` before and after your changes. The original app command higher up this README is for the historical starter. The current local pilot uses the factory below.
+
+```text
+python -m pip install -r requirements.txt -r exercises/day05-requirements.txt
+python -m exercises.day05_identity
+python -m uvicorn exercises.day05_api:create_secure --factory --host 127.0.0.1 --port 8055 --reload
+```
+
+Before importing the update, check `git status -sb` and preserve your Day 4 work on its own branch. On a clean tracking branch use `git pull --ff-only`. On a clean individual branch use `git fetch origin` then `git cherry-pick DAY5_COMMIT` with the trainer's actual materials commit. From a template repo, fetch the trainer's URL and published branch first. If using the ZIP, merge it at the repo root and keep any individual README additions. A learner with an unfinished Day 4 support repair can follow the short recovery route in the challenge guide. Compare the actual status and suite before recording a pass.
+
+Complete the [AWS sandbox discovery record](exercises/day05-aws.md) in a personal digital copy. The [Cognito extension](exercises/day05-cognito.md) is optional. The complete booking and access-control project works locally.
+
+## 12. Day 6
+
+**Is this TaskFlow change safe to build?** Monday’s online workshop starts at Friday’s protected API on port 8055. Open the [Day 6 workshop guide](exercises/day06.md), then save a personal copy of the [evidence record](exercises/day06-evidence.md). You will verify who can create bookings, investigate a proposed dependency downgrade, trace a fictional secret through Git history and harden your branch’s PR workflow. The class will finish with independent review and the [existing digital AWS checklist](exercises/day05-aws.md).
+
+**Get the materials.** Save intended Friday work on its owning branch and run `git status -sb`. On a clean branch that tracks the trainer’s materials, use `git pull --ff-only`. On a clean personal branch in the shared repository, run `git fetch origin`, then `git cherry-pick MATERIALS_COMMIT` using the actual commit the trainer supplies. For an independent repository/template clone use `git fetch TRAINER_REPO_URL PUBLISHED_BRANCH`, then `git cherry-pick MATERIALS_COMMIT`. Substitute the real values supplied by your trainer. If a conflict needs investigation, inspect `git status` and resolve with the trainer, or run `git cherry-pick --abort` to return to the start of that operation. Create your own Monday branch from your saved work, e.g. `git switch -c day06-yourname`. An offline learner can merge the new files into their own checkout and manually add this README section, preserving local additions.
+
+In your existing Python 3.12 environment run `python exercises/day06_gate.py check`, then `python -m pytest -q`. The protected clinic uses the existing Friday dependency and files. The [investigation exhibits](exercises/day06-case.md) and [inert workflow](docs/day06-workflow-review.yml) contain the evidence to inspect. The normal Monday update adds no active workflow, Dockerfile, package dependency or application secrets. You author the security changes on your own branch.
+
+## 13. Day 7
+
+**How should Northbridge host TaskFlow on AWS?** Tuesday’s in-person workshop begins with the access your team actually has. Open the [Day 7 workshop and setup](exercises/day07.md), save a copy of the [digital workbook](exercises/Day_7_Workshop_Workbook.xlsx) and [editable architecture diagram](exercises/day07-architecture.drawio), then start Challenge 1. The [Markdown evidence record](exercises/day07-evidence.md) also works offline.
+
+Use your existing Day 6 branch and Python environment. Preserve intended edits on their owning branch and check `git status -sb`. On a clean branch tracking the published class branch, use `git pull --ff-only`. On a clean individual branch in the shared repo, use `git fetch origin` followed by `git cherry-pick MATERIALS_COMMIT`. In an independent template repo, run `git fetch TRAINER_REPO_URL PUBLISHED_BRANCH` then `git cherry-pick MATERIALS_COMMIT`. Replace placeholders with the trainer's actual URL, branch and materials commit. If it conflicts, check `git status` and compare files with the trainer, or use `git cherry-pick --abort`. For ZIP distribution, merge the new exercises at the existing root and append this section to your own README, preserving local entries. You can use `git switch -c day07-yourname` from your saved work.
+
+The workshop gateway runs on loopback 8070 and the selected API on 8071. Friday’s protected factory and the historical Docker image are different entry points. The six challenges cover sandbox access, a live request trace, a secure network repair, infrastructure investigation, timed recovery and two costed hosting designs. Monday's Actions hardening, failed-check packaging proof and independent review remain on the release backlog.
+
+## 14. Day 8
+
+**Build the AWS pilot with Terraform.** Open the [Day 8 guide](exercises/day08.md), [digital evidence and cost ledger](exercises/day08-evidence.md) and [Terraform starter](infra/day08/foundation.tf). Work in your existing checkout. The class will provision one controlled EC2 foundation per team, refactor a release tag into a validated input and diagnose a failing change. Use the same state and target for Thursday. The [local fallback](exercises/day08-fallback.md) is available if a real blocker occurs.
+
+Save intended prior changes on their owning branch and run `git status -sb`. On a clean branch tracking the published class branch use `git pull --ff-only`. On a clean personal branch in the same repo use `git fetch origin` then `git cherry-pick MATERIALS_COMMIT`. In an independent template repo use `git fetch TRAINER_REPO_URL PUBLISHED_BRANCH` then `git cherry-pick MATERIALS_COMMIT`. Substitute the actual values from the trainer. Inspect conflicts with `git status` or use `git cherry-pick --abort` to return to the starting point. Offline, merge the new exercises and infra/day08 files into the repo and append this section to your existing README. Private team inputs, state, plans, secrets and IDs stay off Git.
+
+## 15. Day 9
+
+**From GitHub to AWS — configure, secure and deploy TaskFlow.** Open the [Day 9 workshop guide](exercises/day09.md), [morning build challenge](exercises/day09-challenge1-brief.md), [afternoon AWS deployment](exercises/day09-challenge2-brief.md) and [digital evidence record](exercises/day09-evidence.md). Thursday builds on the two completed Wednesday workshops. Use the existing team Terraform state, instance and bookings volume.
+
+The new `Dockerfile.day09` and `exercises/day09_entry.py` are learner starters for packaging the protected Day 5 API. Complete their marked work before building. The workflow starter is [docs/day09-workflow-starter.yml](docs/day09-workflow-starter.yml). Once completed, activate it as `.github/workflows/taskflow-day09.yml` in the team repository. The default Dockerfile higher in this README belongs to the historical starter.
+
+Save intended prior work and check `git status -sb`. A clean tracking branch can use `git pull --ff-only`. A clean personal branch can use `git fetch origin` then `git cherry-pick MATERIALS_COMMIT` with the trainer's published Day 9 commit. An independent template repo can fetch `https://github.com/kubzie17/taskflow.git main` then cherry-pick that commit. Resolve conflicts with the trainer, or use `git cherry-pick --abort` to return to the starting point. Keep private evidence, identities, generated AWS policies, Terraform state and team inputs outside the published files.
+
+Finish with the protected application's role tests and a booking surviving a container restart. Record the exact image digest and original EBS ID. Friday continues with monitoring, controlled failure, recovery and release review.
