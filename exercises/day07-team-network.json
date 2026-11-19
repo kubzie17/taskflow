@@ -16,7 +16,7 @@
   },
   "inbound_tcp": {
     "sg-edge":[{"port":443,"cidr":"203.0.113.0/24"}],
-    "sg-app":[{"port":8000,"source_group": "sg-edge"}],
-    "sg-db":[{"port":5432,"source_group": "sg-app"}]
+    "sg-app":[{"port":8000,"source_group":"sg-edge"}],
+    "sg-db":[{"port":5432,"source_group":"sg-app"}]
   }
 }

@@ -10,6 +10,7 @@ data/
 .env
 .env.*
 !.env.example
+*.local.env
 .vscode/
 .DS_Store
 .terraform/
@@ -17,5 +18,8 @@ data/
 *.tfstate.*
 *.tfplan
 *.tfvars
+
+# Day 5 lab practice credentials (fictional, never commit)
+lab-credentials.txt
 # Local diagnostic environment files
 *.local.env

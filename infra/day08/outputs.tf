@@ -17,5 +17,12 @@ output "node_role_name" {
   value       = try(aws_iam_role.pilot[0].name, null)
 }
 
-# Workshop 1: add a data_volume_id output. Use the separate bookings volume, allow null when absent.
-# Workshop 2: add a release_stage output read from the desired security-group tag.
+output "data_volume_id" {
+  description = "Private ledger: separately managed bookings data volume."
+  value       = try(aws_ebs_volume.bookings[0].id, null)
+}
+
+output "release_stage" {
+  description = "ReleaseStage tag on the managed security group."
+  value       = aws_security_group.pilot.tags["ReleaseStage"]
+}

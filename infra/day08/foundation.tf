@@ -1,7 +1,7 @@
 locals {
   name            = "taskflow-${var.team}"
   create_role     = var.enable_host && var.existing_instance_profile == null
-  management_port = 0 # Workshop 1: set the outbound transport port needed by SSM.
+  management_port = 443
 }
 
 data "aws_subnet" "assigned" {
@@ -35,7 +35,7 @@ resource "aws_security_group" "pilot" {
 
   tags = {
     Name         = "${local.name}-host"
-    ReleaseStage = "foundation" # Workshop 2: replace this literal with your input.
+    ReleaseStage = var.release_stage
   }
 }
 
@@ -80,9 +80,9 @@ resource "aws_instance" "pilot" {
     encrypted             = true
     delete_on_termination = true
     tags = {
-      Name   = "${local.name}-root"
-      Team   = var.team
-      Owner  = var.team
+      Name     = "${local.name}-root"
+      Team     = var.team
+      Owner    = var.team
       RetireOn = var.retire_on
       Project  = "TaskFlow"
     }

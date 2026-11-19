@@ -40,6 +40,8 @@ def check_image(image):
             wait_healthy(base)
             proof = verify(base, passwords)
             run("docker", "restart", name)
+            # An ephemeral host port ("127.0.0.1::8000") is reassigned on restart, so re-read it.
+            base = "http://" + run("docker", "port", name, "8000/tcp").splitlines()[0]
             wait_healthy(base)
             verify(base, passwords, proof["created_booking_id"])
             print("PASS: built image enforces roles and retains SQLite data across container restart")
