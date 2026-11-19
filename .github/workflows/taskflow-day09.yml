@@ -7,7 +7,7 @@ on:
         description: Approved team environment
         required: true
         type: choice
-        options: [training-team-a, training-team-b, training-team-c]
+        options: [cool-squad]
       deploy:
         description: Deploy after successful checks and publishing
         required: true
@@ -87,9 +87,9 @@ jobs:
 
   publish:
     needs: [dependency, test, package]
-    if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test-branch') }}
-
-    environment: ${{ inputs.environment }}
+    # Lab only: also publish from the test-branch PR, because manual dispatch needs the workflow on main.
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.head_ref == 'test-branch') }}
+    environment: ${{ inputs.environment || 'cool-squad' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
