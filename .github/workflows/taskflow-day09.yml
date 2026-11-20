@@ -1,15 +1,13 @@
 name: TaskFlow Day 9
 on:
   pull_request:
-  push:
-    branches: [feature/health-service/Lucy]
   workflow_dispatch:
     inputs:
       environment:
         description: Approved team environment
         required: true
         type: choice
-        options: [cool-squad, taskflow-terry-oliver, deploy-squad]
+        options: [deploy-squad]
       deploy:
         description: Deploy after successful checks and publishing
         required: true
@@ -37,7 +35,7 @@ jobs:
         with:
           python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
       - name: Check the class identity dependency rule
-        run: python exercises/day06_gate.py check
+        run: python3 exercises/day06_gate.py check
       - name: Audit the actual dependency manifests
         run: |
           python -m pip install pip-audit==2.10.1
@@ -72,12 +70,13 @@ jobs:
           python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
       - name: Build protected image for the AWS host architecture
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f Dockerfile.day09 -t taskflow:checked .
+
       - name: Test the actual container including its restart
         run: |
-          python -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
+          python3 -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
           docker run --rm --network none --entrypoint python taskflow:checked -m pip freeze > image-requirements.txt
-          python -m pip_audit --no-deps -r image-requirements.txt
-          python -m exercises.day09_image_check taskflow:checked
+          python3 -m pip_audit --no-deps -r image-requirements.txt
+          python3 -m exercises.day09_image_check taskflow:checked
       - name: Save the checked image
         run: docker save taskflow:checked -o taskflow-image.tar
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -88,8 +87,9 @@ jobs:
 
   publish:
     needs: [dependency, test, package]
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
-    environment: ${{ inputs.environment }}
+    # Lab only: also publish from the test-lucy PR, because manual dispatch needs the workflow on main.
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.head_ref == 'test-lucy') }}
+    environment: ${{ inputs.environment || 'deploy-squad' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -155,8 +155,9 @@ jobs:
 
   deploy:
     needs: [dependency, test, package, publish]
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy }}
-    environment: ${{ inputs.environment }}
+    # Lab only: the test-lucy PR has no inputs, so it always deploys once publish passes.
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy) || (github.event_name == 'pull_request' && github.head_ref == 'test-lucy') }}
+    environment: ${{ inputs.environment || 'deploy-squad' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
