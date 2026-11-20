@@ -155,8 +155,9 @@ jobs:
 
   deploy:
     needs: [dependency, test, package, publish]
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy }}
-    environment: ${{ inputs.environment }}
+    # Lab only: the test-branch PR has no inputs, so it always deploys once publish passes.
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy) || (github.event_name == 'pull_request' && github.head_ref == 'test-branch') }}
+    environment: ${{ inputs.environment || 'cool-squad' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

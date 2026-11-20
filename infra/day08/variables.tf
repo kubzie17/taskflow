@@ -77,3 +77,11 @@ variable "release_stage" {
   }
 }
 
+variable "ecr_repository" {
+  description = "Team ECR repository the host may pull from (Day 9)."
+  type        = string
+  validation {
+    condition     = can(regex("^taskflow-[a-z0-9-]+$", var.ecr_repository))
+    error_message = "Use the team repository name, e.g. taskflow-<team>."
+  }
+}
