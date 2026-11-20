@@ -6,7 +6,9 @@ from unittest import TestCase
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from exercises.day04_candidate import create_candidate, support_snapshot
+from exercises.day04_candidate import *
+from exercises.day05_api import *
+from exercises.day05_identity import LocalIdentity, make_state
 
 
 class TestTaskFlow(TestCase):
@@ -34,53 +36,74 @@ class TestTaskFlow(TestCase):
         response = self.client.get("/health")
         self.assertEqual(response.json()["service"], "taskflow")
 
-    # TEST 1 — The public endpoint must return only two fields
-def test_public_status_contract(tmp_path):
-    with TestClient(create_candidate(tmp_path / "status.db")) as client:
-        response = client.get("/support/status")
+    def test_rejects_overlong_title_without_writing(self):
+        response = self.client.post("/tasks", json={"title": "Book van service"})
+        self.assertEqual(response.status_code, 201)
+        tasklist_start = self.client.get("/tasks").json()
+        response = self.client.post("/tasks", json={"title": "1"*101})
+        self.assertEqual(response.status_code, 422)
+        tasklist_end = self.client.get("/tasks").json()
+        self.assertEqual(tasklist_end, tasklist_start)
 
-    assert response.status_code == 200
 
-    assert response.json() == {
+class TestTaskFlow2(TestCase):
+    def test_public_status_contract(self):
+        folder = self.enterContext(TemporaryDirectory())
+        api = create_candidate(Path(folder) / "test2.db")
+        self.client = self.enterContext(TestClient(api))
+        response = self.client.get("/support/status")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(response.json()["service"], "taskflow")
+    
+    def test_local_support_retains_its_diagnostics(self):
+        self.assertEqual(support_snapshot(), {
         "status": "ok",
         "service": "taskflow",
-    }
+        "support_node": "nb-lab-amber-02",
+        "runbook": "NB-DEMO-17"})
 
+    def test_candidate_preserves_health_and_booking(self):
+        folder = self.enterContext(TemporaryDirectory())
+        api = create_candidate(Path(folder) / "test2.db")
+        self.client = self.enterContext(TestClient(api))
+        TestTaskFlow.test_health_reports_ok(self)
+        TestTaskFlow.test_created_task_appears_in_list(self)
+        
+class TestTaskFlowPermissions(TestCase):
+    def setUp(self):
+        folder = self.enterContext(TemporaryDirectory())
+        self.passwords = {"reader": "reader-password", "dispatcher": "dispatcher-password"}
+        identity = LocalIdentity(make_state(self.passwords["reader"], self.passwords["dispatcher"]))
+        api = create_secure(Path(folder) / "test.db", identity)
+        self.client = self.enterContext(TestClient(api))
 
-# TEST 2 — Internal support diagnostics must still exist
-def test_local_support_retains_its_diagnostics():
-    snapshot = support_snapshot()
+    def headers_for(self, username):
+        response = self.client.post("/session", json={"username": username, "password": self.passwords[username]})
+        self.assertEqual(response.status_code, 200)
+        return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
-    assert snapshot["support_node"] == "nb-lab-amber-02"
-    assert snapshot["runbook"] == "NB-DEMO-17"
+    def test_visitor_is_rejected(self):
+        response = self.client.get("/tasks")
+        self.assertEqual(response.status_code, 401)
+        response = self.client.post("/tasks", json={"title": "Book van service"})
+        self.assertEqual(response.status_code, 401)
 
+    def test_reader_can_get_but_not_post(self):
+        headers = self.headers_for("reader")
+        response = self.client.get("/tasks", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/tasks", json={"title": "Book van service"}, headers=headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.client.get("/tasks", headers=headers).json(), [])
+    
+    def test_dispatcher_can_get_and_post(self):
+        headers = self.headers_for("dispatcher")
+        response = self.client.get("/tasks", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/tasks", json={"title": "Book van service"}, headers=headers)
+        self.assertEqual(response.status_code, 201)
+        
+        
 
-# TEST 3 — Existing TaskFlow functionality must still work
-def test_candidate_preserves_health_and_booking(tmp_path):
-    with TestClient(create_candidate(tmp_path / "booking.db")) as client:
-
-        # Check existing health endpoint
-        health = client.get("/health")
-
-        assert health.status_code == 200
-        assert health.json()["status"] == "ok"
-
-        # Create a fictional booking
-        created = client.post(
-            "/tasks",
-            json={"title": "Check west shutter T4"},
-        )
-
-        assert created.status_code == 201
-
-        booking = created.json()
-
-        assert isinstance(booking["id"], int)
-        assert booking["title"] == "Check west shutter T4"
-
-        # Confirm the booking is stored
-        listing = client.get("/tasks")
-
-        assert listing.status_code == 200
-        assert booking in listing.json()
 

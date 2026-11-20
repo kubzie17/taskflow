@@ -1,7 +1,7 @@
 locals {
   name            = "taskflow-${var.team}"
   create_role     = var.enable_host && var.existing_instance_profile == null
-  management_port = 0 # Workshop 1: set the outbound transport port needed by SSM.
+  management_port = 443 # Workshop 1: set the outbound transport port needed by SSM.
 }
 
 data "aws_subnet" "assigned" {
@@ -28,21 +28,21 @@ data "aws_ami" "approved" {
   }
 }
 
-resource "aws_security_group" "pilot" {
+resource "aws_security_group" "pilot-cool-squad" {
   name_prefix = "${local.name}-"
   description = "TaskFlow training host; managed access through outbound SSM only"
   vpc_id      = data.aws_subnet.assigned.vpc_id
 
   tags = {
     Name         = "${local.name}-host"
-    ReleaseStage = "foundation" # Workshop 2: replace this literal with your input.
+    ReleaseStage = var.release_stage
   }
 }
 
 # New VPC security groups have their default outbound rule removed by this provider.
 # This standalone rule is the only intended outbound rule; there are no inbound rules.
-resource "aws_vpc_security_group_egress_rule" "management" {
-  security_group_id = aws_security_group.pilot.id
+resource "aws_vpc_security_group_egress_rule" "management-cool-squad" {
+  security_group_id = aws_security_group.pilot-cool-squad.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"
   from_port         = local.management_port
@@ -57,14 +57,14 @@ resource "aws_vpc_security_group_egress_rule" "management" {
   }
 }
 
-resource "aws_instance" "pilot" {
+resource "aws_instance" "pilot-cool-squad" {
   count                       = var.enable_host ? 1 : 0
   ami                         = data.aws_ami.approved[0].id
   instance_type               = "t3.micro"
   subnet_id                   = data.aws_subnet.assigned.id
   associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.pilot.id]
-  iam_instance_profile        = local.create_role ? aws_iam_instance_profile.pilot[0].name : var.existing_instance_profile
+  vpc_security_group_ids      = [aws_security_group.pilot-cool-squad.id]
+  iam_instance_profile        = local.create_role ? aws_iam_instance_profile.pilot-cool-squad[0].name : var.existing_instance_profile
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -80,19 +80,19 @@ resource "aws_instance" "pilot" {
     encrypted             = true
     delete_on_termination = true
     tags = {
-      Name   = "${local.name}-root"
-      Team   = var.team
-      Owner  = var.team
+      Name     = "${local.name}-root"
+      Team     = var.team
+      Owner    = var.team
       RetireOn = var.retire_on
       Project  = "TaskFlow"
     }
   }
   tags = { Name = local.name }
 
-  depends_on = [aws_vpc_security_group_egress_rule.management, aws_iam_role_policy.agent]
+  depends_on = [aws_vpc_security_group_egress_rule.management-cool-squad, aws_iam_role_policy.agent-cool-squad]
 }
 
-resource "aws_ebs_volume" "bookings" {
+resource "aws_ebs_volume" "bookings-cool-squad" {
   count             = var.enable_host ? 1 : 0
   availability_zone = data.aws_subnet.assigned.availability_zone
   type              = "gp3"
@@ -101,9 +101,9 @@ resource "aws_ebs_volume" "bookings" {
   tags              = { Name = "${local.name}-bookings" }
 }
 
-resource "aws_volume_attachment" "bookings" {
+resource "aws_volume_attachment" "bookings-cool-squad" {
   count       = var.enable_host ? 1 : 0
   device_name = "/dev/sdf"
-  volume_id   = aws_ebs_volume.bookings[0].id
-  instance_id = aws_instance.pilot[0].id
+  volume_id   = aws_ebs_volume.bookings-cool-squad[0].id
+  instance_id = aws_instance.pilot-cool-squad[0].id
 }

@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
       - name: Check the class identity dependency rule
-        run: python exercises/day06_gate.py check
+        run: python3 exercises/day06_gate.py check
       - name: Audit the actual dependency manifests
         run: |
           python -m pip install pip-audit==2.10.1
@@ -55,7 +55,7 @@ jobs:
         with:
           python-version: ${{ vars.PYTHON_VERSION || '3.12' }}
       - run: python -m pip install -r requirements.txt -r exercises/day05-requirements.txt
-      - run: python -c "raise SystemExit('TODO E - run the full pytest suite here')"
+      - run: python -m pytest -q
 
   package:
     needs: [dependency, test]
@@ -72,10 +72,10 @@ jobs:
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f Dockerfile.day09 -t taskflow:checked .
       - name: Test the actual container including its restart
         run: |
-          python -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
+          python3 -m pip install pip-audit==2.10.1 -r exercises/day05-requirements.txt
           docker run --rm --network none --entrypoint python taskflow:checked -m pip freeze > image-requirements.txt
-          python -m pip_audit --no-deps -r image-requirements.txt
-          python -m exercises.day09_image_check taskflow:checked
+          python3 -m pip_audit --no-deps -r image-requirements.txt
+          python3 -m exercises.day09_image_check taskflow:checked
       - name: Save the checked image
         run: docker save taskflow:checked -o taskflow-image.tar
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -98,11 +98,11 @@ jobs:
     steps:
       - name: Require configured non-sensitive values
         env:
-          AWS_REGION: "" # TODO C: bind the approved environment variable
+          AWS_REGION: ${{ vars.AWS_REGION }} # TODO C: bind the approved environment variable
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
           ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-          APP_ENVIRONMENT: "" # TODO D: bind the approved environment variable
+          APP_ENVIRONMENT: ${{ vars.APP_ENVIRONMENT }} # TODO D: bind the approved environment variable
         run: |
           : "${AWS_REGION:?Set the environment variable AWS_REGION}"
           : "${AWS_ACCOUNT_ID:?Set AWS_ACCOUNT_ID}"
@@ -134,7 +134,7 @@ jobs:
       - name: Publish the checked image and record its digest
         id: push
         env:
-          AWS_REGION: "" # TODO C: bind the approved environment variable
+          AWS_REGION: ${{ vars.AWS_REGION }} # TODO C: bind the approved environment variable
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -172,10 +172,10 @@ jobs:
           role-duration-seconds: 900
       - name: Run the fixed deployment document on the original host
         env:
-          AWS_REGION: "" # TODO C: bind the approved environment variable
+          AWS_REGION: ${{ vars.AWS_REGION }} # TODO C: bind the approved environment variable
           INSTANCE_ID: ${{ vars.INSTANCE_ID }}
           SSM_DOCUMENT: ${{ vars.SSM_DOCUMENT }}
-          APP_ENVIRONMENT: "" # TODO D: bind the approved environment variable
+          APP_ENVIRONMENT: ${{ vars.APP_ENVIRONMENT }} # TODO D: bind the approved environment variable
           APP_PORT: ${{ vars.APP_PORT }}
           IMAGE_DIGEST: ${{ needs.publish.outputs.digest }}
         run: python exercises/day09_submit.py

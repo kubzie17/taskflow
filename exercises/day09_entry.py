@@ -13,7 +13,7 @@ def application():
         raise RuntimeError("Missing runtime configuration: " + ", ".join(missing))
     database = Path(os.environ["TASKFLOW_DB"])
     # TODO A: read TASKFLOW_IDENTITY_FILE from the environment and wrap it in Path.
-    raise RuntimeError("Complete TODO A in exercises/day09_entry.py")
+    identity = Path(os.environ["TASKFLOW_IDENTITY_FILE"])
     if not database.is_absolute() or not identity.is_absolute():
         raise RuntimeError("Runtime file paths must be absolute")
     if os.environ["APP_ENVIRONMENT"] not in {"training", "ci", "local"}:

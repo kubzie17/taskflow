@@ -58,6 +58,7 @@ terraform show -no-color w1.tfplan
 3. Repair **only your local copy** to represent the intended Thursday stage. Repeat the same plan. Compare `terraform output release_stage` with the real AWS tag. Leave the cloud as it is.
 4. In Teams give a partner the symptom, smallest fix and verification. Keep your private evidence before removing the disposable `fault.tfvars`.
 **Acceptance:** reproduce the failure, explain the variable’s origin, make a passing plan and verify unchanged cloud state. **Stretch:** explain why `terraform validate` alone cannot prove a specific variable file is acceptable.
+validate checks that the actual terraform (syntax and variable references etc) is valid, not that the logic or values themselves are valid
 
 ## Progressive hints
 Open only after a first attempt; the trainer holds the completed files.

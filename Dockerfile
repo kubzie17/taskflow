@@ -1,17 +1,15 @@
-
 FROM python:3.12-slim
 
-WORKDIR /srv/taskflow
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    TASKFLOW_DB=/var/lib/taskflow/taskflow.db
+WORKDIR /app
 
 COPY requirements.txt .
+RUN python -m pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-RUN python -m pip install --no-cache-dir -r requirements.txt
-
-COPY app/ app/
+COPY app ./app
 
 EXPOSE 8000
 

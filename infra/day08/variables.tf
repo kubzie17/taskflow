@@ -60,11 +60,28 @@ variable "existing_instance_profile" {
 variable "retire_on" {
   description = "Agreed cleanup date in the course resource ledger."
   type        = string
-  default     = "2026-11-20"
+  default     = "2026-11-27"
   validation {
     condition     = can(formatdate("YYYY-MM-DD", "${var.retire_on}T00:00:00Z"))
-    error_message = "Use an ISO calendar date such as 2026-11-20."
+    error_message = "Use an ISO calendar date such as 2026-11-27."
   }
 }
 
-# Workshop 2: declare release_stage here with a string type, default and validation.
+variable "release_stage" {
+  description = "Release stage tag for the security group"
+  type        = string
+  default     = "foundation"
+  validation {
+    condition     = var.release_stage == "foundation" || var.release_stage == "deploy-ready"
+    error_message = "Release stage must be 'foundation' or 'deploy-ready'."
+  }
+}
+
+variable "ecr_repository" {
+  description = "Team ECR repository the host may pull from (Day 9)."
+  type        = string
+  validation {
+    condition     = can(regex("^taskflow-[a-z0-9-]+$", var.ecr_repository))
+    error_message = "Use the team repository name, e.g. taskflow-<team>."
+  }
+}
