@@ -1,133 +1,240 @@
-# Challenge 2 — Deploy protected TaskFlow on the original AWS host
+**Goal:** Deploy the reviewed protected TaskFlow Docker image to your original EC2 host, use persistent EBS storage, and verify application security and booking persistence.
 
-**110 minutes · 13:00–14:15 and 14:30–15:05**
+## Part A — Confirm the AWS infrastructure
 
-## Scenario and desired outcome
+### Step 1 — Open the original Terraform working directory
 
-Northbridge needs the reviewed container running on Wednesday's EC2 host. Bookings must live on the separate EBS volume. The application must receive its identity configuration at runtime, enforce both roles, and retain a booking after a container restart.
+Use Wednesday's actual `infra/day08` working directory and authoritative state.
 
-Your team owns the deployment decision. Verify the host, mounted disk, image and application behaviour, then give Friday's operator enough evidence to continue.
-
-## Prerequisites and starting files
-
-Use Wednesday's actual `infra/day08` working directory and state, the original instance and data-volume IDs, an approved SSO session, a passing image from Challenge 1 and your assigned GitHub environment. The trainer supplies the reviewed host helper and safe EBS mounting procedure from the private pack. Inspect and discuss those operations together before executing them. AWS CLI v2 and the Session Manager plugin are required locally for the tunnel.
-
-Open `docs/day09-runtime.example.json`, `exercises/day09_probe.py`, your completed workflow, and your personal copy of the evidence record. Keep generated host configuration and full account/resource IDs in your private working folder.
-
-## 1. Confirm continuity and restart if required
-
-In **local PowerShell**, use the existing team Terraform directory. Set the profile and Region from Wednesday, then run the commands below. Renew SSO if needed. Assign IDs from the actual outputs or verified private ledger. A missing output is a prompt to inspect the original state and AWS Console with the trainer.
+In local PowerShell:
 
 ```powershell
-$env:AWS_PROFILE = 'YOUR_APPROVED_PROFILE'
-$env:AWS_REGION = 'YOUR_EXISTING_TARGET_REGION'
-aws sso login --profile $env:AWS_PROFILE
-aws sts get-caller-identity
 terraform state list
 terraform output
-$InstanceId = 'YOUR_ORIGINAL_INSTANCE_ID'
-$VolumeId = 'YOUR_ORIGINAL_BOOKINGS_VOLUME_ID'
-aws ec2 describe-instances --instance-ids $InstanceId --query 'Reservations[0].Instances[0].[InstanceId,State.Name,IamInstanceProfile.Arn,MetadataOptions]' --output json
-aws ec2 describe-volumes --volume-ids $VolumeId --query 'Volumes[0].[VolumeId,AvailabilityZone,Attachments]' --output json
 ```
 
-If the instance is `stopped`, start that instance and wait for its health checks.
+Identify the original EC2 instance ID and separate bookings EBS volume ID.
+
+### Step 2 — Confirm AWS identity
+
+Use your approved AWS profile and the Region that actually contains the instance.
 
 ```powershell
-aws ec2 start-instances --instance-ids $InstanceId
-aws ec2 wait instance-status-ok --instance-ids $InstanceId
-aws ssm describe-instance-information --filters "Key=InstanceIds,Values=$InstanceId" --query 'InstanceInformationList[0].[InstanceId,PingStatus,AgentVersion]' --output json
+$env:AWS_PROFILE = "YOUR_APPROVED_PROFILE"
+$env:AWS_REGION = "YOUR_APPROVED_REGION"
+
+aws sso login --profile $env:AWS_PROFILE
 ```
 
-In **EC2 → Instances → select instance → Connect → Session Manager**, connect when it is Online. The instance ID stays authoritative after a restart. An automatically assigned public IP may change. Give an actual blocker five minutes with the trainer, then use the instructor target or local continuation while recording the missing step.
+Confirm the correct account privately.
 
-## 2. Prepare the real bookings volume
+### Step 3 — Inspect EC2
 
-Inside the **remote Linux SSM session**, inspect before changing anything.
+In AWS Console:
+
+**EC2 → Instances → select your original team instance**
+
+Inspect:
+
+- Instance state.
+- Security group.
+- IAM instance profile.
+- Storage attachments.
+
+If the instance was stopped, start that same instance.
+
+Do not create a replacement.
+
+### Step 4 — Connect through Systems Manager
+
+When the instance is Running and SSM Online:
+
+**EC2 → Instances → select instance → Connect → Session Manager → Connect**
+
+This opens a remote Linux shell.
+
+## Part B — Prepare persistent EBS storage
+
+### Step 5 — Inspect the disks
+
+Inside the remote Linux session:
 
 ```bash
 sudo lsblk -o NAME,SERIAL,SIZE,FSTYPE,UUID,MOUNTPOINTS
 findmnt /
-sudo docker ps -a
+sudo cat /etc/fstab
 ```
 
-The trainer leads the safe mounting procedure. Match the AWS EBS ID to its NVMe serial, identify the root device, check filesystem signatures and existing contents, and mount the bookings volume using its filesystem UUID. Formatting is permitted only after the trainer has verified that the exact bookings volume is newly empty. An existing filesystem is mounted and inspected. A partitioned or unexpected disk needs individual review.
+Identify the root disk and the separate bookings volume.
 
-The expected application directory is `/srv/taskflow-data/app`, owned by UID/GID `10001:10001`. The deployment helper checks that it is on the expected EBS volume before starting the container. Verify the mount with `findmnt --target /srv/taskflow-data/app`.
+Compare the EBS volume ID from AWS with the Linux NVMe device serial.
 
-## 3. Complete runtime configuration
+**Do not format anything yet.**
 
-Save your own copy of `docs/day09-runtime.example.json` outside the repository. Supply the approved account, Region, team ECR name, original data-volume ID and parameter path. Determine the path from **Systems Manager → Parameter Store** and compare it with the exact parameter ARN permitted by the instance role. The trainer checks and installs this non-secret JSON at `/etc/taskflow/node.json`.
+### Step 6 — Prepare the bookings volume with the trainer
 
-With the trainer, create two different fictional passphrases through the private identity helper. It creates a signing key and salted password records in memory and stores the resulting JSON as one Standard `SecureString`. The helper keeps the required application structure intact. Retain the fictional passphrases privately for the HTTP tests.
+The trainer will inspect the original bookings disk and demonstrate the safe mounting helper.
 
-Predict how the secret reaches the application. The EC2 host's instance role retrieves it, writes an owner-restricted file under `/run/taskflow`, and mounts that file read-only at `/run/secrets/identity.json`. The container gets the file path through `TASKFLOW_IDENTITY_FILE`. Its database path is `/var/lib/taskflow/taskflow.db` on the EBS-backed bind mount. The metadata hop limit stays at 1, so the application does not depend on retrieving instance credentials inside Docker.
+An existing valid filesystem must be preserved.
 
-## 4. Deploy through the controlled workflow
+A newly created empty course disk may be initialised only after its identity and contents have been verified.
 
-The trainer confirms the root-owned host helper, safe mount and fixed SSM document are ready. Open **Actions → TaskFlow Day 9 → Run workflow** on `main`, select your environment, and set `deploy` to true.
+The intended host directory is:
 
-This runs all checks and builds a new checked release. Record the **digest from this run**, even if the source commit matches the morning run. The deployment job sends that digest to the team's fixed SSM document on the original host. It waits for the command result. Inspect **Systems Manager → Run Command → Command history** for the same command ID.
+`/srv/taskflow-data/app`
 
-Expected results are a successful command, a container named `taskflow`, a loopback binding `127.0.0.1:8055`, health returning 200, and anonymous `/tasks` returning 401. Complete the role checks yourself before declaring the release accepted.
+Verify that it is backed by the original bookings EBS volume.
 
-If OIDC is blocked, the trainer can use approved SSO credentials to publish and deploy a gated reference image with the private instructions. Record the actual delivery route and image digest.
+## Part C — Runtime configuration
 
-## 5. Reach the API through an SSM tunnel
+### Step 7 — Inspect the application configuration
 
-Open a **new local PowerShell terminal** using the same AWS profile and Region. Keep it open while testing.
+Open:
+
+`docs/day09-runtime.example.json`
+
+Create your own private copy outside the repository.
+
+Use the trainer-approved configuration for your:
+
+- AWS Region.
+- AWS account.
+- ECR repository.
+- Original EBS volume.
+- Runtime parameter name.
+
+### Step 8 — Inspect Parameter Store
+
+In AWS Console:
+
+**Systems Manager → Parameter Store**
+
+Find your team's approved parameter:
+
+`/taskflow/TEAM/runtime-identity`
+
+Record the parameter name and version number.
+
+Do not display its value in Teams or GitHub.
+
+Discuss how the EC2 instance role retrieves it and how Docker receives a read-only mounted file.
+
+## Part D — Deploy through GitHub Actions
+
+### Step 9 — Run the approved deployment workflow
+
+In GitHub:
+
+**Actions → TaskFlow Day 9 → Run workflow**
+
+Choose:
+
+- Branch: `main`
+- Environment: your assigned team environment
+- Deploy: **true**
+
+The workflow must pass the required checks and publish its image before deployment proceeds.
+
+Record the digest from this run.
+
+### Step 10 — Inspect the AWS deployment
+
+In AWS Console:
+
+**Systems Manager → Run Command → Command history**
+
+Find the corresponding command and check its status.
+
+The expected deployment is a container called:
+
+`taskflow`
+
+It should be bound to the EC2 host's loopback port:
+
+`127.0.0.1:8055`
+
+## Part E — Test the application
+
+### Step 11 — Open an SSM port-forwarding session
+
+In a new local PowerShell terminal:
 
 ```powershell
-$env:AWS_PROFILE = 'YOUR_APPROVED_PROFILE'
-$env:AWS_REGION = 'YOUR_EXISTING_TARGET_REGION'
-$InstanceId = 'YOUR_ORIGINAL_INSTANCE_ID'
+$env:AWS_PROFILE = "YOUR_APPROVED_PROFILE"
+$env:AWS_REGION = "YOUR_APPROVED_REGION"
+$InstanceId = "YOUR_ORIGINAL_INSTANCE_ID"
+
 aws ssm start-session --target $InstanceId --document-name AWS-StartPortForwardingSession --parameters 'portNumber=8055,localPortNumber=8055'
 ```
 
-In another local terminal, at the repo root with its virtual environment active, run the following. Enter the fictional passphrases when prompted. The probe prints evidence while keeping tokens and passphrases out of its output.
+Keep the session running.
+
+### Step 12 — Run the protected API probe
+
+In another local PowerShell terminal, from your TaskFlow repository with the virtual environment active:
 
 ```powershell
 python -m exercises.day09_probe --url http://127.0.0.1:8055
 ```
 
-If port 8055 is already occupied locally, stop your earlier local TaskFlow or choose local port 18055 in the tunnel and use `--url http://127.0.0.1:18055`. The remote port stays 8055.
+Enter your fictional reader and dispatcher passphrases privately.
 
-| Operation | Expected evidence |
+Expected:
+
+| Action | Result |
 |---|---|
-| Visitor reads or creates a task | 401 and no new row |
-| Invalid token creates a task | 401 and no new row |
-| Reader signs in and reads | 200 |
-| Reader creates a task | 403 and no new row |
-| Dispatcher signs in, reads and creates | 200, 200 and 201 with exactly one new row |
+| GET /health | 200 |
+| Visitor GET /tasks | 401 |
+| Visitor POST /tasks | 401 |
+| Invalid token POST /tasks | 401 |
+| Reader GET /tasks | 200 |
+| Reader POST /tasks | 403 |
+| Dispatcher GET /tasks | 200 |
+| Dispatcher POST /tasks | 201 |
 
-Optional browser view is `http://127.0.0.1:8055/docs`. The sign-in route is `POST /session`, and the booking collection is `/tasks`. Keep the tester terminal as the authoritative role and persistence evidence.
+Rejected requests must not add database records.
 
-## 6. Prove persistence and inspect logs
+Record the booking ID created by the dispatcher.
 
-Record the probe's `created_booking_id`. In the **remote Linux session** run the following.
+## Part F — Test persistence
+
+### Step 13 — Restart the container
+
+Inside the remote Linux session:
 
 ```bash
 sudo docker restart taskflow
-sudo docker ps --filter name=taskflow
-sudo docker logs --tail 40 taskflow
-sudo docker inspect taskflow --format '{{.Config.Image}}'
-sudo findmnt --target /srv/taskflow-data/app
 ```
 
-Wait for application startup. In **local PowerShell** run the probe again with your actual recorded ID.
+Wait for the application to start.
+
+### Step 14 — Verify the original booking still exists
+
+Back in local PowerShell:
 
 ```powershell
 python -m exercises.day09_probe --url http://127.0.0.1:8055 --expect-booking YOUR_RECORDED_INTEGER_ID
 ```
 
-The second probe checks that booking and the denials without creating another booking. Logs should show startup and shutdown information. HTTP access logging is disabled for this training package. Friday adds operational signals and CloudWatch.
+Replace the placeholder with the booking ID from Step 12.
 
-## Acceptance and handover
+The restart check must find the same booking without creating another one.
 
-Record the instance ID, EBS ID, mount UUID, source commit, deployed digest, parameter name/version, successful role results, retained booking ID, first log observation and any unresolved issue. Record the one operator who owns state and Friday restart. Do not capture secret values, bearer tokens or raw state in screenshots or Git.
+### Step 15 — Record evidence
 
-Stop the container cleanly and stop the original instance when your trainer closes the lab. EBS and ECR storage remain billable while retained. The secret file under `/run` disappears after a host stop/reboot. Friday must verify the EBS mount, retrieve the secret again and redeploy the known passing digest before resuming tests. The original data volume and Terraform state are retained.
+Record:
 
-## Progressive hints and stretch
+- Source commit and workflow run.
+- ECR image digest.
+- Original EC2 instance ID.
+- Original EBS volume ID.
+- EBS mount UUID.
+- Runtime parameter name and version.
+- Visitor, reader and dispatcher results.
+- Booking ID retained after restart.
+- One useful log observation.
+- Any outstanding issue and next action.
 
-Use the separate hints file one level at a time. A finished team can inspect the parameter ARN granted to its instance role, compare it with the GitHub role, and explain which identity can do each action. With the trainer, inspect a stopped previous container and describe how image rollback preserves the data volume. Keep CloudWatch and data recovery for Friday.
+**Success:** A checked protected TaskFlow image runs on the existing EC2 host, enforces both roles and retains bookings on the correct EBS volume after a container restart.
+
+Do not reveal signing keys, password records, bearer tokens or raw Terraform state.
