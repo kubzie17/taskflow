@@ -41,7 +41,7 @@ resource "aws_ssm_document" "deploy-cool-squad" {
               docker pull "$IMAGE"
               docker rm -f taskflow || true
               docker run -d --name taskflow --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp -p 127.0.0.1:{{ AppPort }}:8000 -e APP_ENVIRONMENT={{ AppEnvironment }} -e TASKFLOW_DB=/var/lib/taskflow/taskflow.db -e TASKFLOW_IDENTITY_FILE=/run/secrets/identity.json --mount type=bind,src=/run/taskflow/identity.json,dst=/run/secrets/identity.json,readonly --mount type=bind,src=/srv/taskflow-data/app,dst=/var/lib/taskflow "$IMAGE"
-              curl -fsS --retry 15 --retry-delay 2 --retry-connrefused http://127.0.0.1:{{ AppPort }}/health
+              curl -fsS --retry 15 --retry-delay 2 --retry-all-errors http://127.0.0.1:{{ AppPort }}/health
   DOC
 }
 
